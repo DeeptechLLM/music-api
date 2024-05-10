@@ -7,12 +7,14 @@ import pandas as pd
 from sklearn.feature_extraction.text import CountVectorizer, TfidfTransformer
 from sklearn.decomposition import TruncatedSVD
 from api.track import track_route
+from api.recommendation import recommendation_route
 
 from sklearn.metrics.pairwise import cosine_similarity
 from sklearn import preprocessing
 
 app = Flask(__name__)
 app.register_blueprint(track_route)
+app.register_blueprint(recommendation_route)
 
 # Generate a cryptographically secure secret key (store securely outside code)
 app.secret_key = secrets.token_urlsafe(32)
