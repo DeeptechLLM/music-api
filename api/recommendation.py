@@ -1,8 +1,13 @@
 from flask import Blueprint, request, make_response
 from services.recommendation_service import get_recommendation_svc
-import json
+from marshmallow import Schema, fields, ValidationError
 
-import pandas as pd
+class RecommendationSchema(Schema):
+    artist_ids = fields.List(fields.Integer)
+    song_ids = fields.List(fields.Integer)
+    emotion_ids = fields.List(fields.Integer)
+    genre_ids = fields.List(fields.Integer)
+    limit = fields.Integer()
 
 recommendation_route = Blueprint('recommendation_route', __name__)
 
@@ -10,24 +15,26 @@ recommendation_route = Blueprint('recommendation_route', __name__)
 def get_recommendation():
     # Extract parameters from request body
     
-    data = request.get_json()    
-    artist_ids = data.get('artists_ids', [])  # Handle optional parameters with defaults    
-    song_ids = data.get('songs_ids', [])
-    emotions_id = data.get('emotions_ids', [])
-    genres_id = data.get('genres_ids', [])
+    request_data = request.get_json()    
+    schema = RecommendationSchema()
+    
+    try:
+        data = schema.load(request_data)
+    except ValidationError as e:
+        return make_response({'message': str(e)}, 400)
+    
+    
+    artist_ids = data.get('artist_ids', [])  # Handle optional parameters with defaults    
+    song_ids = data.get('song_ids', [])
+    emotion_ids = data.get('emotion_ids', [])
+    genre_ids = data.get('genre_ids', [])
     # limit = data.get('limit', 10)  # Default limit of 10
     
-    # Validation
-    
     try:        
-        result = get_recommendation_svc(artist_ids, song_ids, emotions_id, genres_id)
+        result = get_recommendation_svc(artist_ids, song_ids, emotion_ids, genre_ids)
         return make_response({'message': 'success', 'tracks': result}, 201)
     except Exception as e:
-        return make_response({'message': str(e)}, 404)
-    
+        return make_response({'message': str(e)}, 404)    
 
-# @track_route.before_request
-# def before_req():
-#     params = request.view_args
-#     track_id_param = params["track_id"]
+        
 
