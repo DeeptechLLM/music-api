@@ -36,9 +36,8 @@ def get_tracks_recommendation(tracks):
         recommended_tracks = recommended_tracks + result
     return recommended_tracks
 
-def get_recommendation(track_id, num_recommendations=10):
+def get_recommendation(track_id, num_recommendations=10):    
     
-    # track_index = df_tracks[df_tracks['track_name'] == user_track].index[0]
     df_tracks = current_app.config['DF_TRACKS']    
     model = current_app.config['MODEL']
     
@@ -111,7 +110,7 @@ def get_emotion_tracks(emotion_name, num_tracks=2):
         ordered_emotion_tracks = sorted_df[['track_id', emotion_name]].values.tolist()
         ordered_emotion_tracks = [[int(track_id), value] for track_id, value in ordered_emotion_tracks][:num_tracks]
 
-        # print("Top {} {} songs:".format(num_tracks, emotion_name))
+        # print("Top {} {} songs:".format(num_tracks, emotion_name)) 
         for track_id, value in ordered_emotion_tracks:
             emotion_tracks.append(track_id)
             # print("track_id: {}, value: {}".format(track_id, value))

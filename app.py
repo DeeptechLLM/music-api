@@ -1,16 +1,10 @@
-from flask import Flask, request, jsonify
+from flask import Flask
 from flask_cors import CORS
 
 import secrets  # For generating a secure secret key
-
-import pandas as pd
-from sklearn.feature_extraction.text import CountVectorizer, TfidfTransformer
-from sklearn.decomposition import TruncatedSVD
 from api.track import track_route
 from api.recommendation import recommendation_route
 
-from sklearn.metrics.pairwise import cosine_similarity
-from sklearn import preprocessing
 from config import ProdConfig
 
 app = Flask(__name__)
