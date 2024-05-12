@@ -2,7 +2,8 @@ from flask import make_response, current_app
 from sklearn.metrics.pairwise import cosine_similarity
 from utils.simple_utils import remove_duplicate_items
 
-def get_recommendation_svc(artist_ids, song_ids, emotions_id, genres_id):
+def get_recommendation_svc(artist_ids, song_ids, emotions, genres):
+    print("recommendation service: ", song_ids)
     recommended_tracks = []
     try:
         for track in song_ids:
@@ -20,9 +21,8 @@ def get_recommendation_svc(artist_ids, song_ids, emotions_id, genres_id):
 def user_recommendation(track_id, num_recommendations=10):
     
     # track_index = df_tracks[df_tracks['track_name'] == user_track].index[0]
-    df_tracks = current_app.config['df_tracks']
-    # print(df_tracks)
-    tfidf = current_app.config['tfidf']
+    df_tracks = current_app.config['DF_TRACKS']    
+    tfidf = current_app.config['TFIDF']
     
     track_index = df_tracks[df_tracks['track_id'] == int(track_id)].index[0]
     # print("Params: ", track_id,  str(df_tracks.loc[track_index, 'track_name']), str(df_tracks.loc[track_index, 'artist_name']))
@@ -42,7 +42,7 @@ def user_recommendation(track_id, num_recommendations=10):
         track_name = str(df_tracks.loc[i, 'track_name'])
         artist_name = str(df_tracks.loc[i, 'artist_name'])
 
-        # print("{}: {} {} by {}".format(i, track_id, track_name, artist_name))
+        print("{}: {} {} by {}".format(i, track_id, track_name, artist_name))
 
         track_info = {
             "idx": i,

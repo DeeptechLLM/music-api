@@ -16,8 +16,8 @@
 {
     "artist_ids": [1, 2],
     "song_ids": [1, 2],
-    "emotion_ids": [],
-    "genre_ids": [],
+    "emotions": ["", ""],
+    "genres": ["", ""],
     "limit": 10
 }
 ```

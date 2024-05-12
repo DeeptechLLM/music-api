@@ -11,8 +11,11 @@ from api.recommendation import recommendation_route
 
 from sklearn.metrics.pairwise import cosine_similarity
 from sklearn import preprocessing
+from config import ProdConfig
 
 app = Flask(__name__)
+# app.config.from_pyfile(f'config.py')
+app.config.from_object(ProdConfig)
 app.register_blueprint(track_route)
 app.register_blueprint(recommendation_route)
 
@@ -20,48 +23,32 @@ app.register_blueprint(recommendation_route)
 app.secret_key = secrets.token_urlsafe(32)
 print(app.secret_key)
 
-# for recommendation 
-df_tracks = pd.read_csv("data/combined_tracks.csv")
-df_tracks['content'] = df_tracks['genres'].astype(str) + ' ' + df_tracks['emotions'].astype(str) + ' ' + df_tracks['instrumentals'] + ' ' + df_tracks['track_name'] + ' ' + df_tracks['artist_name'] + ' ' + df_tracks['album_name'].astype(str)
-df_tracks['content'] = df_tracks['content'].fillna('')
-        
-vectorizer = CountVectorizer()
-bow = vectorizer.fit_transform(df_tracks['content'])
-tfidf_transformer = TfidfTransformer()
-tfidf = tfidf_transformer.fit_transform(bow)
-        
-lsa = TruncatedSVD(n_components=100, algorithm='arpack')
-lsa.fit(tfidf)
-app.config['df_tracks'] = df_tracks
-app.config['tfidf'] = tfidf
-app.config['lsa'] = lsa
+# # for recommendation-1
+# general_path='data'
+# # Read data
+# data = pd.read_csv(f'{general_path}/features-30sec-model1.csv', index_col='filename')
 
-# for recommendation-1
-general_path='data'
-# Read data
-data = pd.read_csv(f'{general_path}/features-30sec-model1.csv', index_col='filename')
+# # Extract labels
+# labels = data[['label']]
 
-# Extract labels
-labels = data[['label']]
+# # Drop labels from original dataframe
+# data = data.drop(columns=['label'])
+# # data.head()
 
-# Drop labels from original dataframe
-data = data.drop(columns=['label'])
-# data.head()
+# # Scale the data
+# data_scaled=preprocessing.scale(data)
+# # print('Scaled data type:', type(data_scaled))
 
-# Scale the data
-data_scaled=preprocessing.scale(data)
-# print('Scaled data type:', type(data_scaled))
+# # Cosine similarity
+# similarity = cosine_similarity(data_scaled)
+# # print("Similarity shape:", similarity.shape)
 
-# Cosine similarity
-similarity = cosine_similarity(data_scaled)
-# print("Similarity shape:", similarity.shape)
+# # Convert into a dataframe and then set the row index and column names as labels
+# sim_df_labels = pd.DataFrame(similarity)
+# sim_df_names = sim_df_labels.set_index(labels.index)
+# sim_df_names.columns = labels.index
 
-# Convert into a dataframe and then set the row index and column names as labels
-sim_df_labels = pd.DataFrame(similarity)
-sim_df_names = sim_df_labels.set_index(labels.index)
-sim_df_names.columns = labels.index
-
-app.config['sim_df_names'] = sim_df_names
+# app.config['sim_df_names'] = sim_df_names
 
 CORS(app)
 
