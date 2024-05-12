@@ -3,7 +3,17 @@ from sklearn.metrics.pairwise import cosine_similarity
 from utils.simple_utils import remove_duplicate_items
 
 def get_recommendation_svc(artist_ids, tracks, emotions, genres):
-    
+    """Main function to get recommendation
+
+    Args:
+        artist_ids (list): list of artist_ids
+        tracks (list): list of track_ids
+        emotions (list): list of emotions
+        genres (list): list of genres
+
+    Returns:
+        list: recommended track list
+    """
     recommended_tracks = []
     try:
         tracks_recommendation = get_tracks_recommendation(tracks)
@@ -30,13 +40,30 @@ def get_recommendation_svc(artist_ids, tracks, emotions, genres):
         return e
         
 def get_tracks_recommendation(tracks):
+    """Function to get recommendation for track list
+
+    Args:
+        tracks (list): list of track_id
+
+    Returns:
+        list: recommended track list
+    """
     recommended_tracks = []
     for track in tracks:
         result = get_recommendation(track, 40)    
         recommended_tracks = recommended_tracks + result
     return recommended_tracks
 
-def get_recommendation(track_id, num_recommendations=10):    
+def get_recommendation(track_id, num_recommendations=10):
+    """Function to get recommendation for single track
+
+    Args:
+        track_id (number): Single track id
+        num_recommendations (int, optional): limit number of recommended tracks. Defaults to 10.
+
+    Returns:
+        list: recommended track list
+    """
     
     df_tracks = current_app.config['DF_TRACKS']    
     model = current_app.config['MODEL']
@@ -73,6 +100,15 @@ def get_recommendation(track_id, num_recommendations=10):
     return recommendations
 
 def get_genre_tracks(genre_name, num_tracks=2):
+    """Function to retrieve top tracks of given genre
+
+    Args:
+        genre_name (string): Give genre name
+        num_tracks (int, optional): limit number of tracks. Defaults to 2.
+
+    Returns:
+        list: genre's track list
+    """
     genre_tracks = []
     genres = current_app.config['DF_GENRES']
     
@@ -96,14 +132,23 @@ def get_genre_tracks(genre_name, num_tracks=2):
     return genre_tracks
 
 def get_emotion_tracks(emotion_name, num_tracks=2):
+    """Function to retrieve top tracks of given emotion
+
+    Args:
+        emotion_name (string): Given emotion name
+        num_tracks (int, optional): limit number of tracks. Defaults to 2.
+
+    Returns:
+        list: emotion's track list
+    """
     emotion_tracks = []
     emotions = current_app.config['DF_EMOTIONS']
     
     try:
-        # Filtering out all songs in the Genre column for non-zero or specific values
+        # Filtering out all songs in the Emotion column for non-zero or specific values
         filtered_df = emotions[emotions[emotion_name] != 0]
         
-        # Sorting the songs of the genre(descending)
+        # Sorting the songs of the emotion(descending)
         sorted_df = filtered_df.sort_values(by=emotion_name, ascending=False)
         
         # Retrieving <num_tracks> tracks from sorted list

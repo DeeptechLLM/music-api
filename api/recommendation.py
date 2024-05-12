@@ -3,6 +3,7 @@ from services.recommendation_service import get_recommendation_svc
 from marshmallow import Schema, fields, ValidationError
 
 class RecommendationSchema(Schema):
+
     artist_ids = fields.List(fields.Integer)
     song_ids = fields.List(fields.Integer)
     emotions = fields.List(fields.String(), required=False)
