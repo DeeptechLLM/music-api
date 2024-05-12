@@ -33,7 +33,7 @@ def get_recommendation():
     
     try:        
         result = get_recommendation_svc(artist_ids, song_ids, emotions, genres)
-        print("got result")
+        # print("got result", result)
         return make_response({'message': 'success', 'tracks': result}, 201)
     except Exception as e:
         return make_response({'message': str(e)}, 404)    
