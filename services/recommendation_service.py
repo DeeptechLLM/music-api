@@ -35,7 +35,7 @@ def get_recommendation_svc(artist_ids, tracks, emotions, genres):
         c_recommend = remove_duplicate_items(recommended_tracks, "track_id")
         o_recommend = sorted(c_recommend, key=lambda item: item["score"], reverse=True)
         recommended_tracks = [{k: v for k, v in item.items() if k != "score"} for item in o_recommend]
-        return recommended_tracks        
+        return o_recommend
     except Exception as e: 
         return e
         
@@ -86,7 +86,7 @@ def get_recommendation(track_id, num_recommendations=10):
         track_name = str(df_tracks.loc[i, 'track_name'])
         artist_name = str(df_tracks.loc[i, 'artist_name'])
 
-        print("{}: {} {} by {}".format(i, track_id, track_name, artist_name))
+        print("{}: {} {} by {}".format(i, track_id, track_name, artist_name, score))
 
         track_info = {
             "idx": i,

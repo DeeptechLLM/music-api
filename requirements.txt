@@ -4,3 +4,4 @@ pandas
 flask_cors
 scikit-learn
 marshmallow
+gunicorn
