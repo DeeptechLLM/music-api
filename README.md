@@ -94,6 +94,8 @@ recommendation.mmusic.mn {
 }
 
 ```
+
+### Genre mapping
 | id | mmusic_genres_en | mmusic_genres_mn | dt_model_genres |
 | ---|:----------------|:----------------|----------------:|
 | 1 | instrumentals | Хөгжмийн бүтээлүүд |  |
