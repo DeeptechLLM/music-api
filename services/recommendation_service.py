@@ -186,11 +186,19 @@ def get_recommendation_zohioliin(track_m_id, num_recommendations=20):
 
         return recommendations
     
+    except TypeError:
+        print("Invalid track_m_id - {}. Please ensure track_m_id can be converted to an integer.".format(track_m_id))
+        return []
     except KeyError:
-        return {"error": "Key not found in model. Please ensure the track_id is correct."}
+        print("Invalid key. Please ensure 'track_m_id - {}' is a valid key in the DataFrame.".format(track_m_id))
+        return []
+    except IndexError:
+        print("No matching track found. Please ensure the track_m_id - {} exists in the DataFrame.".format(track_m_id))
+        return []
 
-    except Exception as e:
-        return {"error": str(e)}
+    except Exception as e:        
+        print({"error": str(e)})
+        return []
 
 def get_recommendation_ardiin(track_m_id, num_recommendations=20):
     """Function to get recommendation for single track only for ardiin model
@@ -242,11 +250,19 @@ def get_recommendation_ardiin(track_m_id, num_recommendations=20):
 
         return recommendations
     
+    except TypeError:
+        print("Invalid track_m_id - {}. Please ensure track_m_id can be converted to an integer.".format(track_m_id))
+        return []
     except KeyError:
-        return {"error": "Key not found in model. Please ensure the track_id is correct."}
+        print("Invalid key. Please ensure 'track_m_id - {}' is a valid key in the DataFrame.".format(track_m_id))
+        return []
+    except IndexError:
+        print("No matching track found. Please ensure the track_m_id - {} exists in the DataFrame.".format(track_m_id))
+        return []
 
-    except Exception as e:
-        return {"error": str(e)}
+    except Exception as e:        
+        print({"error": str(e)})
+        return []
 
 def get_genre_tracks(genre_name, num_tracks=2):
     """Function to retrieve top tracks of given genre
