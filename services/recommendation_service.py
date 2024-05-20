@@ -3,15 +3,14 @@ from sklearn.metrics.pairwise import cosine_similarity
 from utils.simple_utils import remove_duplicate_items
 
 
-def get_recommendation_svc(artist_ids, tracks, emotions, genres, model_type="normal"):
+def get_recommendation_svc(artist_ids, tracks, emotions, genres):
     """Main function to get recommendation
 
     Args:
         artist_ids (list): list of artist_ids
         tracks (list): list of track_ids
         emotions (list): list of emotions
-        genres (list): list of genres
-        model_type (string): type of recommendation (normal, zohioliin, ardiin)
+        genres (list): list of genres        
 
     Returns:
         list: recommended track list
@@ -19,21 +18,21 @@ def get_recommendation_svc(artist_ids, tracks, emotions, genres, model_type="nor
     
     recommended_tracks = []
     try:
-        tracks_recommendation = get_tracks_recommendation(tracks, model_type) 
+        tracks_recommendation = get_tracks_recommendation(tracks) 
         recommended_tracks = recommended_tracks + tracks_recommendation
         
         if len(genres) > 0:
             for genre in genres:
                 genre_tracks = get_genre_tracks(genre, 5)                
                 
-                genres_recommendation = get_tracks_recommendation(genre_tracks, "normal")
+                genres_recommendation = get_tracks_recommendation(genre_tracks)
                 recommended_tracks = recommended_tracks + genres_recommendation
                 
         if len(emotions) > 0:
             for emotion in emotions:
                 emotion_tracks = get_emotion_tracks(emotion, 5)
                 
-                emotions_recommendation = get_tracks_recommendation(emotion_tracks, "normal")                
+                emotions_recommendation = get_tracks_recommendation(emotion_tracks)                
                 
                 recommended_tracks = recommended_tracks + emotions_recommendation
         
@@ -45,12 +44,11 @@ def get_recommendation_svc(artist_ids, tracks, emotions, genres, model_type="nor
         raise Exception(str(e))
 
         
-def get_tracks_recommendation(tracks, model_type):
+def get_tracks_recommendation(tracks):
     """Function to get recommendation for track list
 
     Args:
-        tracks (list): list of track_id
-        model_type (string): type of recommendation (normal, zohioliin, ardiin)
+        tracks (list): list of track_id        
 
     Returns:
         list: recommended track list
@@ -58,20 +56,16 @@ def get_tracks_recommendation(tracks, model_type):
     try: 
         recommended_tracks = []
         for track in tracks:
-            if model_type=="normal":
-                result = get_recommendation(track, 40)
-                
-            elif model_type=="zohioliin":
-                result = get_recommendation_zohioliin(track, 40)
-            else:
-                result = get_recommendation_ardiin(track, 40)
+            result_model_1 = get_recommendation_1(track, 40)
+            result_model_2 = get_recommendation_2(track, 40)
+            result_model_3 = get_recommendation_3(track, 40)
             
-            recommended_tracks = recommended_tracks + result
+            recommended_tracks = recommended_tracks + result_model_1 + result_model_2 + result_model_3
         return recommended_tracks
     except Exception as e:        
         raise Exception(str(e))
 
-def get_recommendation(track_m_id, num_recommendations=10):
+def get_recommendation_1(track_m_id, num_recommendations=10):
     """Function to get recommendation for single track only for normal model
 
     Args:
@@ -85,6 +79,7 @@ def get_recommendation(track_m_id, num_recommendations=10):
     
         df_tracks = current_app.config['DF_TRACKS']
         model = current_app.config['MODEL']
+        
         
         # Get the track index from recommendation data                
         track_index = df_tracks[df_tracks['track_m_id'] == int(track_m_id)].index[0]
@@ -126,17 +121,17 @@ def get_recommendation(track_m_id, num_recommendations=10):
         print("Invalid track_m_id - {}. Please ensure track_m_id can be converted to an integer.".format(track_m_id))
         return []
     except KeyError:
-        print("Invalid key. Please ensure 'track_m_id - {}' is a valid key in the DataFrame.".format(track_m_id))
+        print("Invalid key. Please ensure 'track_m_id - {}' is a valid key in the DataFrame of model-01.".format(track_m_id))
         return []
     except IndexError:
-        print("No matching track found. Please ensure the track_m_id - {} exists in the DataFrame.".format(track_m_id))
+        print("No matching track found. Please ensure the track_m_id - {} exists in the DataFrame of model-01.".format(track_m_id))
         return []
 
     except Exception as e:        
         print({"error": str(e)})
         return []
     
-def get_recommendation_zohioliin(track_m_id, num_recommendations=20):
+def get_recommendation_2(track_m_id, num_recommendations=20):
     """Function to get recommendation for single track only for zohioliin model
 
     Args:
@@ -200,7 +195,7 @@ def get_recommendation_zohioliin(track_m_id, num_recommendations=20):
         print({"error": str(e)})
         return []
 
-def get_recommendation_ardiin(track_m_id, num_recommendations=20):
+def get_recommendation_3(track_m_id, num_recommendations=20):
     """Function to get recommendation for single track only for ardiin model
 
     Args:
