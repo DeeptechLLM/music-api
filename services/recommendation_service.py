@@ -24,15 +24,17 @@ def get_recommendation_svc(artist_ids, tracks, emotions, genres, model_type="nor
         
         if len(genres) > 0:
             for genre in genres:
-                genre_tracks = get_genre_tracks(genre, 5)
+                genre_tracks = get_genre_tracks(genre, 5)                
                 
-                genres_recommendation = get_tracks_recommendation(genre_tracks, model_type)
+                genres_recommendation = get_tracks_recommendation(genre_tracks, "normal")
                 recommended_tracks = recommended_tracks + genres_recommendation
                 
         if len(emotions) > 0:
             for emotion in emotions:
                 emotion_tracks = get_emotion_tracks(emotion, 5)
-                emotions_recommendation = get_tracks_recommendation(emotion_tracks, model_type)
+                
+                emotions_recommendation = get_tracks_recommendation(emotion_tracks, "normal")                
+                
                 recommended_tracks = recommended_tracks + emotions_recommendation
         
         c_recommend = remove_duplicate_items(recommended_tracks, "track_id")
@@ -40,7 +42,7 @@ def get_recommendation_svc(artist_ids, tracks, emotions, genres, model_type="nor
         recommended_tracks = [{k: v for k, v in item.items() if k != "score"} for item in o_recommend]
         return o_recommend
     except Exception as e: 
-        return e
+        raise Exception(str(e))
 
         
 def get_tracks_recommendation(tracks, model_type):
@@ -53,18 +55,21 @@ def get_tracks_recommendation(tracks, model_type):
     Returns:
         list: recommended track list
     """
-    
-    recommended_tracks = []
-    for track in tracks:
-        if model_type=="normal":
-            result = get_recommendation(track, 40)
-        elif model_type=="zohioliin":
-            result = get_recommendation_zohioliin(track, 40)
-        else:
-            result = get_recommendation_ardiin(track, 40)
-        
-        recommended_tracks = recommended_tracks + result
-    return recommended_tracks
+    try: 
+        recommended_tracks = []
+        for track in tracks:
+            if model_type=="normal":
+                result = get_recommendation(track, 40)
+                
+            elif model_type=="zohioliin":
+                result = get_recommendation_zohioliin(track, 40)
+            else:
+                result = get_recommendation_ardiin(track, 40)
+            
+            recommended_tracks = recommended_tracks + result
+        return recommended_tracks
+    except Exception as e:        
+        raise Exception(str(e))
 
 def get_recommendation(track_m_id, num_recommendations=10):
     """Function to get recommendation for single track only for normal model
@@ -82,8 +87,7 @@ def get_recommendation(track_m_id, num_recommendations=10):
         model = current_app.config['MODEL']
         
         # Get the track index from recommendation data                
-        track_index = df_tracks[df_tracks['track_m_id'] == int(track_m_id)].index[0]        
-        # print("Params: ", track_m_id,  str(df_tracks.loc[track_index, 'track_name']), str(df_tracks.loc[track_index, 'artist_name']))
+        track_index = df_tracks[df_tracks['track_m_id'] == int(track_m_id)].index[0]
         
         # Get the recommended tracks from model withing score using track index
         similarity_scores = cosine_similarity(model[track_index], model)
@@ -103,7 +107,7 @@ def get_recommendation(track_m_id, num_recommendations=10):
             track_name = str(df_tracks.loc[i, 'track_name'])
             artist_name = str(df_tracks.loc[i, 'artist_name'])
 
-            # print("{}: {}/{} {} by {} - {}".format(i, track_id, track_m_id, track_name, artist_name, score))
+            print("{}: {}/{} {} by {} - {}".format(i, track_id, track_m_id, track_name, artist_name, score))
 
             track_info = {
                 "idx": i,
@@ -112,17 +116,25 @@ def get_recommendation(track_m_id, num_recommendations=10):
                 "track_name": track_name,
                 "artist_name": artist_name,
                 "score": score
-            }            
+            }
             
             recommendations.append(track_info)
 
         return recommendations
     
+    except TypeError:
+        print("Invalid track_m_id - {}. Please ensure track_m_id can be converted to an integer.".format(track_m_id))
+        return []
     except KeyError:
-        return {"error": "Key not found in model. Please ensure the track_id is correct."}
+        print("Invalid key. Please ensure 'track_m_id - {}' is a valid key in the DataFrame.".format(track_m_id))
+        return []
+    except IndexError:
+        print("No matching track found. Please ensure the track_m_id - {} exists in the DataFrame.".format(track_m_id))
+        return []
 
-    except Exception as e:
-        return {"error": str(e)}
+    except Exception as e:        
+        print({"error": str(e)})
+        return []
     
 def get_recommendation_zohioliin(track_m_id, num_recommendations=20):
     """Function to get recommendation for single track only for zohioliin model
