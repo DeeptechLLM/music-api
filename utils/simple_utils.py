@@ -1,5 +1,14 @@
 def remove_duplicate_items(_api_data, _key):
-    
+    """
+    This function removes duplicate items from a list of dictionaries based on a specified key.
+
+    Args:
+        _api_data (list): A list of dictionaries from which duplicates need to be removed.
+        _key (str): The key in the dictionaries based on which duplicates are identified.
+
+    Returns:
+        list: A list of dictionaries after removing duplicates.
+    """
     unique_elements = []
     cleaned_data = []
     keys = []

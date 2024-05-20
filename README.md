@@ -1,3 +1,7 @@
+### Requirement
+- python version: > 3.8
+- pip 
+
 ### Prepare virtualenv
 `python -m venv music`
 
@@ -9,6 +13,9 @@
 
 ### Install requirements
 `pip install -r requirements.txt`
+
+### Set Environment
+`export MUSIC_ENV=prod`
 
 ### Execute project
 ```
@@ -29,6 +36,35 @@ URL: `https://recommendation.mmusic.mn/api/v1/recommendations`
 ```
 
 ### Proxy config
+
+#### Install Caddy
+
+Log into your instance of Ubuntu Server and add the necessary dependencies with:
+
+`sudo apt install -y debian-keyring debian-archive-keyring apt-transport-https -y`
+
+Once that installation completes, add the official Caddy GPG key with:
+
+`curl -1sLf 'https://dl.cloudsmith.io/public/caddy/stable/gpg.key' | sudo gpg --dearmor -o /usr/share/keyrings/caddy-stable-archive-keyring.gpg`
+
+Create the repository file with the command:
+
+`curl -1sLf 'https://dl.cloudsmith.io/public/caddy/stable/debian.deb.txt' | sudo tee /etc/apt/sources.list.d/caddy-stable.list`
+
+Update apt:
+
+`sudo apt-get update`
+
+Finally, install Caddy with the command:
+
+`sudo apt-get install caddy -y`
+
+Start and enable the Caddy service with:
+
+`sudo systemctl enable --now caddy`
+
+
+#### Config
 path: `/etc/caddy/Caddyfile`
 ```
 recommendation.mmusic.mn {

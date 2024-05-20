@@ -1,8 +1,9 @@
-from flask import make_response, current_app
+from flask import current_app
 from sklearn.metrics.pairwise import cosine_similarity
 from utils.simple_utils import remove_duplicate_items
 
-def get_recommendation_svc(artist_ids, tracks, emotions, genres):
+
+def get_recommendation_svc(artist_ids, tracks, emotions, genres, model_type="normal"):
     """Main function to get recommendation
 
     Args:
@@ -10,26 +11,28 @@ def get_recommendation_svc(artist_ids, tracks, emotions, genres):
         tracks (list): list of track_ids
         emotions (list): list of emotions
         genres (list): list of genres
+        type (string): type of recommendation (normal, zohioliin, ardiin)
 
     Returns:
         list: recommended track list
     """
+    
     recommended_tracks = []
     try:
-        tracks_recommendation = get_tracks_recommendation(tracks)
+        tracks_recommendation = get_tracks_recommendation(tracks, model_type) 
         recommended_tracks = recommended_tracks + tracks_recommendation
         
         if len(genres) > 0:
             for genre in genres:
                 genre_tracks = get_genre_tracks(genre, 5)
                 
-                genres_recommendation = get_tracks_recommendation(genre_tracks)
+                genres_recommendation = get_tracks_recommendation(genre_tracks, model_type)
                 recommended_tracks = recommended_tracks + genres_recommendation
                 
         if len(emotions) > 0:
             for emotion in emotions:
                 emotion_tracks = get_emotion_tracks(emotion, 5)
-                emotions_recommendation = get_tracks_recommendation(emotion_tracks)
+                emotions_recommendation = get_tracks_recommendation(emotion_tracks, model_type)
                 recommended_tracks = recommended_tracks + emotions_recommendation
         
         c_recommend = remove_duplicate_items(recommended_tracks, "track_id")
@@ -38,8 +41,9 @@ def get_recommendation_svc(artist_ids, tracks, emotions, genres):
         return o_recommend
     except Exception as e: 
         return e
+
         
-def get_tracks_recommendation(tracks):
+def get_tracks_recommendation(tracks, model_type):
     """Function to get recommendation for track list
 
     Args:
@@ -48,13 +52,20 @@ def get_tracks_recommendation(tracks):
     Returns:
         list: recommended track list
     """
+    
     recommended_tracks = []
     for track in tracks:
-        result = get_recommendation(track, 40)    
+        if model_type=="normal":
+            result = get_recommendation(track, 40)
+        elif model_type=="zohioliin":
+            result = get_recommendation_zohioliin(track, 40)
+        else:
+            result = get_recommendation_ardiin(track, 40)
+        
         recommended_tracks = recommended_tracks + result
     return recommended_tracks
 
-def get_recommendation(track_id, num_recommendations=10):
+def get_recommendation(track_m_id, num_recommendations=10):
     """Function to get recommendation for single track
 
     Args:
@@ -64,40 +75,135 @@ def get_recommendation(track_id, num_recommendations=10):
     Returns:
         list: recommended track list
     """
+    try:
     
-    df_tracks = current_app.config['DF_TRACKS']    
-    model = current_app.config['MODEL']
+        df_tracks = current_app.config['DF_TRACKS']
+        model = current_app.config['MODEL']
+                
+        track_index = df_tracks[df_tracks['track_m_id'] == int(track_m_id)].index[0]        
+        print("Params: ", track_m_id,  str(df_tracks.loc[track_index, 'track_name']), str(df_tracks.loc[track_index, 'artist_name']))
+        similarity_scores = cosine_similarity(model[track_index], model)
+
+        similar_tracks = list(enumerate(similarity_scores[0]))
+        sorted_similar_tracks = sorted(similar_tracks, key=lambda x: x[1], reverse=True)[1:num_recommendations + 1]
+
+        # # Print the top 10 similar tracks
+        # for i, score in sorted_similar_tracks:
+        #     print("{} - {}: {}".format(i, df_tracks.loc[i, 'artist_name'], df_tracks.loc[i, 'track_name']))
+
+        recommendations = []
+
+        for i, score in sorted_similar_tracks:            
+            track_id = df_tracks.loc[i, 'track_id']
+            track_name = str(df_tracks.loc[i, 'track_name'])
+            artist_name = str(df_tracks.loc[i, 'artist_name'])
+
+            # print("{}: {}/{} {} by {} - {}".format(i, track_id, track_m_id, track_name, artist_name, score))
+
+            track_info = {
+                "idx": i,
+                "track_id": int(track_id),
+                "track_m_id": track_m_id,
+                "track_name": track_name,
+                "artist_name": artist_name,
+                "score": score
+            }            
+            
+            recommendations.append(track_info)
+
+        return recommendations
     
-    track_index = df_tracks[df_tracks['track_id'] == int(track_id)].index[0]
-    # print("Params: ", track_id,  str(df_tracks.loc[track_index, 'track_name']), str(df_tracks.loc[track_index, 'artist_name']))
-    similarity_scores = cosine_similarity(model[track_index], model)
+    except KeyError:
+        return {"error": "Key not found in model. Please ensure the track_id is correct."}
 
-    similar_tracks = list(enumerate(similarity_scores[0]))
-    sorted_similar_tracks = sorted(similar_tracks, key=lambda x: x[1], reverse=True)[1:num_recommendations + 1]
+    except Exception as e:
+        return {"error": str(e)}
+    
+def get_recommendation_zohioliin(track_m_id, num_recommendations=20):
+    try:
+    
+        df_tracks_zohioliin = current_app.config['DF_TRACKS_ZOHIOLIIN']
+        model_zohioliin = current_app.config['MODEL_ZOHIOLIIN']        
+                
+        track_index = df_tracks_zohioliin[df_tracks_zohioliin['track_m_id'] == int(track_m_id)].index[0]
+        
+        similarity_scores = cosine_similarity(model_zohioliin[track_index], model_zohioliin)
+        similar_tracks = list(enumerate(similarity_scores[0]))
+        sorted_similar_tracks = sorted(similar_tracks, key=lambda x: x[1], reverse=True)[1:num_recommendations + 1]
+        
+        # # Print the top 10 similar tracks
+        # for i, score in sorted_similar_tracks:
+        #     print("{} - {}: {}".format(i, df_tracks_zohioliin.loc[i, 'artist_name'], df_tracks_zohioliin.loc[i, 'track_name']))
 
-    # # Print the top 10 similar tracks
-    # for i, score in sorted_similar_tracks:
-    #     print("{}: {}".format(i, df_tracks.loc[i, 'track_name']))
+        recommendations = []
 
-    recommendations = []
+        for i, score in sorted_similar_tracks:
+            track_id = df_tracks_zohioliin.loc[i, 'track_id']            
+            track_name = str(df_tracks_zohioliin.loc[i, 'track_name'])
+            artist_name = str(df_tracks_zohioliin.loc[i, 'artist_name'])
 
-    for i, score in sorted_similar_tracks:
-        track_id = str(df_tracks.loc[i, 'track_id'])
-        track_name = str(df_tracks.loc[i, 'track_name'])
-        artist_name = str(df_tracks.loc[i, 'artist_name'])
+            # print("{}: {}/{} {} by {} - {}".format(i, track_id, track_m_id, track_name, artist_name, score))
 
-        print("{}: {} {} by {}".format(i, track_id, track_name, artist_name, score))
+            track_info = {
+                "idx": i,
+                "track_id": int(track_id),
+                "track_m_id": int(track_m_id),
+                "track_name": track_name,
+                "artist_name": artist_name,
+                "score": score
+            }
+            recommendations.append(track_info)
 
-        track_info = {
-            "idx": i,
-            "track_id": track_id,
-            "track_name": track_name,
-            "artist_name": artist_name,
-            "score": score
-        }
-        recommendations.append(track_info)
+        return recommendations
+    
+    except KeyError:
+        return {"error": "Key not found in model. Please ensure the track_id is correct."}
 
-    return recommendations
+    except Exception as e:
+        return {"error": str(e)}
+
+def get_recommendation_ardiin(track_m_id, num_recommendations=20):
+    try:
+    
+        df_tracks_ardiin = current_app.config['DF_TRACKS_ARDIIN']
+        model_ardiin = current_app.config['MODEL_ARDIIN']        
+        
+        track_index = df_tracks_ardiin[df_tracks_ardiin['track_m_id'] == int(track_m_id)].index[0]
+        
+        similarity_scores = cosine_similarity(model_ardiin[track_index], model_ardiin)
+        similar_tracks = list(enumerate(similarity_scores[0]))
+        sorted_similar_tracks = sorted(similar_tracks, key=lambda x: x[1], reverse=True)[1:num_recommendations + 1]
+        
+        # # Print the top 10 similar tracks
+        # for i, score in sorted_similar_tracks:
+        #     print("{} - {}: {}".format(i, df_tracks_ardiin.loc[i, 'artist_name'], df_tracks_ardiin.loc[i, 'track_name']))
+
+        recommendations = []
+
+        for i, score in sorted_similar_tracks:
+            track_id = df_tracks_ardiin.loc[i, 'track_id']            
+            track_name = str(df_tracks_ardiin.loc[i, 'track_name'])
+            artist_name = str(df_tracks_ardiin.loc[i, 'artist_name'])
+
+            # print("{}: {}/{} {} by {} - {}".format(i, track_id, track_m_id, track_name, artist_name, score))
+
+            track_info = {
+                "idx": i,
+                "track_id": int(track_id),
+                "track_m_id": int(track_m_id),
+                "track_name": track_name,
+                "artist_name": artist_name,
+                "score": score
+            }
+            recommendations.append(track_info)
+
+        return recommendations
+    
+    except KeyError:
+        return {"error": "Key not found in model. Please ensure the track_id is correct."}
+
+    except Exception as e:
+        return {"error": str(e)}
 
 def get_genre_tracks(genre_name, num_tracks=2):
     """Function to retrieve top tracks of given genre

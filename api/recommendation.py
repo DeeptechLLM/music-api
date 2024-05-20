@@ -8,6 +8,7 @@ class RecommendationSchema(Schema):
     song_ids = fields.List(fields.Integer)
     emotions = fields.List(fields.String(), required=False)
     genres = fields.List(fields.String(), required=False)
+    type = fields.String()
     limit = fields.Integer()
 
 # Route
@@ -30,14 +31,17 @@ def get_recommendation():
     song_ids = data.get('song_ids', [])
     emotions = data.get('emotions', [])
     genres = data.get('genres', [])
+    model_type = data.get('type', "normal")
     # limit = data.get('limit', 10)  # Default limit of 10
     
-    try:        
-        result = get_recommendation_svc(artist_ids, song_ids, emotions, genres)
+    try:      
+        
+        result = get_recommendation_svc(artist_ids, song_ids, emotions, genres, model_type)
         # print("got result", result)
         return make_response({'message': 'success', 'tracks': result}, 201)
     except Exception as e:
-        return make_response({'message': str(e)}, 404)    
+        return make_response({'message': str(e)}, 404)
+
 
         
 
