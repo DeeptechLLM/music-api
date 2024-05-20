@@ -14,8 +14,6 @@
 ### Install requirements
 `pip install -r requirements.txt`
 
-### Set Environment
-`export MUSIC_ENV=prod`
 
 ### Execute project
 ```
@@ -25,14 +23,36 @@ nohup gunicorn -b localhost:5002 app:app > music.log &
 ### Sample Request
 Method: `POST`
 URL: `https://recommendation.mmusic.mn/api/v1/recommendations`
+normal: 
 ```
 {
-    "artist_ids": [1, 2],
-    "song_ids": [1, 2],
-    "emotions": ["", ""],
-    "genres": ["", ""],
-    "limit": 10
-}
+    "artist_ids": [],
+    "song_ids": [1563],
+    "emotions": [],
+    "genres": [],
+    "limit": 10,
+    "type": "normal"
+} 
+zohioliin:
+{
+    "artist_ids": [],
+    "song_ids": [5907],
+    "emotions": [],
+    "genres": [],
+    "limit": 10,
+    "type": "zohioliin"
+} 
+ardiin:
+{
+    "artist_ids": [],
+    "song_ids": [1247],
+    "emotions": [],
+    "genres": [],
+    "limit": 10,
+    "type": "ardiin"
+} 
+
+
 ```
 
 ### Proxy config
