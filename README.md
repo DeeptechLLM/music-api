@@ -94,3 +94,106 @@ recommendation.mmusic.mn {
 }
 
 ```
+| id | mmusic_genres_en | mmusic_genres_mn | dt_model_genres |
+| ---|:----------------|:----------------|----------------:|
+| 1 | instrumentals | Хөгжмийн бүтээлүүд |  |
+| 2 | mongol_country | Монгол Кантри |  |
+| 3 | movie_songs | Киноны дуу |  |
+| 4 | zohioliin | Нийтийн |  |
+| 5 | ardiin | Ардын |  |
+| 6 | children | Хүүхдийн |  |
+| 7 | long | Уртын дуу |  |
+| 8 | pop | Поп | pop |
+|  |  |  | electropop |
+|  |  |  | poprock |
+|  |  |  | popfolk |
+|  |  |  | easylistening |
+|  |  |  | contemporary |
+|  |  |  | instrumentalpop |
+|  |  |  | lounge |
+|  |  |  | dance |
+|  |  |  | eurodance |
+|  |  |  | disco |
+| 9 | rock_alternative | Рок, Алтернатив | alternative |
+|  |  |  | alternativerock |
+|  |  |  | bluesrock |
+|  |  |  | grunge |
+|  |  |  | hardrock |
+|  |  |  | punkrock |
+|  |  |  | rock |
+|  |  |  | rocknroll |
+|  |  |  | postrock |
+|  |  |  | progressive |
+|  |  |  | psychedelic |
+|  |  |  | indie |
+|  |  |  | instrumentalrock |
+|  |  |  | classicrock |
+| 10 | hiphop_rap | Хип хоп, реп | hiphop |
+|  |  |  | rap |
+|  |  |  | triphop |
+| 11 | jazz | Жазз | acidjazz |
+|  |  |  | jazz |
+|  |  |  | jazzfunk |
+|  |  |  | jazzfusion |
+|  |  |  | swing |
+|  |  |  | improvisation |
+|  |  |  | fusion |
+| 12 | electronics | Электроник (Диско, техно...) | ambient |
+|  |  |  | breakbeat |
+|  |  |  | chillout |
+|  |  |  | club |
+|  |  |  | darkambient |
+|  |  |  | deephouse |
+|  |  |  | drumandbass |
+|  |  |  | dubstep |
+|  |  |  | edm |
+|  |  |  | electronic |
+|  |  |  | electronica |
+|  |  |  | house |
+|  |  |  | idm |
+|  |  |  | minimal |
+|  |  |  | synthpop |
+|  |  |  | techno |
+|  |  |  | trance |
+|  |  |  | downtempo |
+|  |  |  | atmospheric |
+|  |  |  | experimental |
+|  |  |  | darkwave |
+| 13 | classic | Сонгодог | classical |
+| 14 | r_and_b | R&B | blues |
+|  |  |  | funk |
+|  |  |  | rnb |
+|  |  |  | soul |
+|  |  |  | dub |
+|  |  |  | groove |
+|  |  |  | sk |
+| 15 | reggae | Регги | reggae |
+| 16 | pop_opera | Поп опера | chanson |
+| 17 | ethnic | Этник | african |
+|  |  |  | celtic |
+|  |  |  | ethnicrock |
+|  |  |  | ethno |
+|  |  |  | latin |
+|  |  |  | medieval |
+|  |  |  | oriental |
+|  |  |  | world |
+|  |  |  | worldfusion |
+|  |  |  | tribal |
+|  |  |  | newage |
+|  |  |  | bossanova |
+| 18 | metal | Метал | hard |
+|  |  |  | heavymetal |
+|  |  |  | metal |
+|  |  |  | gothic |
+|  |  |  | industrial |
+| 19 | country | Кантри | country |
+|  |  |  | folk |
+|  |  |  | singersongwriter |
+| 20 | trap | Трап | trap |
+| 21 | orchestral | Оркестр | choir |
+|  |  |  | orchestral |
+|  |  |  | soundtracks |
+|  |  |  | symphonic |
+
+
+
