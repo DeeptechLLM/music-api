@@ -11,7 +11,7 @@ def get_recommendation_svc(artist_ids, tracks, emotions, genres, model_type="nor
         tracks (list): list of track_ids
         emotions (list): list of emotions
         genres (list): list of genres
-        type (string): type of recommendation (normal, zohioliin, ardiin)
+        model_type (string): type of recommendation (normal, zohioliin, ardiin)
 
     Returns:
         list: recommended track list
@@ -48,6 +48,7 @@ def get_tracks_recommendation(tracks, model_type):
 
     Args:
         tracks (list): list of track_id
+        model_type (string): type of recommendation (normal, zohioliin, ardiin)
 
     Returns:
         list: recommended track list
@@ -66,7 +67,7 @@ def get_tracks_recommendation(tracks, model_type):
     return recommended_tracks
 
 def get_recommendation(track_m_id, num_recommendations=10):
-    """Function to get recommendation for single track
+    """Function to get recommendation for single track only for normal model
 
     Args:
         track_id (number): Single track id
@@ -79,11 +80,15 @@ def get_recommendation(track_m_id, num_recommendations=10):
     
         df_tracks = current_app.config['DF_TRACKS']
         model = current_app.config['MODEL']
-                
+        
+        # Get the track index from recommendation data                
         track_index = df_tracks[df_tracks['track_m_id'] == int(track_m_id)].index[0]        
-        print("Params: ", track_m_id,  str(df_tracks.loc[track_index, 'track_name']), str(df_tracks.loc[track_index, 'artist_name']))
+        # print("Params: ", track_m_id,  str(df_tracks.loc[track_index, 'track_name']), str(df_tracks.loc[track_index, 'artist_name']))
+        
+        # Get the recommended tracks from model withing score using track index
         similarity_scores = cosine_similarity(model[track_index], model)
 
+        # Get the similar tracks by sorting the similarity scores
         similar_tracks = list(enumerate(similarity_scores[0]))
         sorted_similar_tracks = sorted(similar_tracks, key=lambda x: x[1], reverse=True)[1:num_recommendations + 1]
 
@@ -120,14 +125,27 @@ def get_recommendation(track_m_id, num_recommendations=10):
         return {"error": str(e)}
     
 def get_recommendation_zohioliin(track_m_id, num_recommendations=20):
+    """Function to get recommendation for single track only for zohioliin model
+
+    Args:
+        track_id (number): Single track id
+        num_recommendations (int, optional): limit number of recommended tracks. Defaults to 10.
+
+    Returns:
+        list: recommended track list
+    """
     try:
     
         df_tracks_zohioliin = current_app.config['DF_TRACKS_ZOHIOLIIN']
         model_zohioliin = current_app.config['MODEL_ZOHIOLIIN']        
-                
+        
+        # Get the track index from recommendation data         
         track_index = df_tracks_zohioliin[df_tracks_zohioliin['track_m_id'] == int(track_m_id)].index[0]
         
+        # Get the recommended tracks from model withing score using track index
         similarity_scores = cosine_similarity(model_zohioliin[track_index], model_zohioliin)
+        
+        # Get the similar tracks by sorting the similarity scores
         similar_tracks = list(enumerate(similarity_scores[0]))
         sorted_similar_tracks = sorted(similar_tracks, key=lambda x: x[1], reverse=True)[1:num_recommendations + 1]
         
@@ -163,14 +181,27 @@ def get_recommendation_zohioliin(track_m_id, num_recommendations=20):
         return {"error": str(e)}
 
 def get_recommendation_ardiin(track_m_id, num_recommendations=20):
+    """Function to get recommendation for single track only for ardiin model
+
+    Args:
+        track_id (number): Single track id
+        num_recommendations (int, optional): limit number of recommended tracks. Defaults to 10.
+
+    Returns:
+        list: recommended track list
+    """
     try:
     
         df_tracks_ardiin = current_app.config['DF_TRACKS_ARDIIN']
         model_ardiin = current_app.config['MODEL_ARDIIN']        
         
+        # Get the track index from recommendation data
         track_index = df_tracks_ardiin[df_tracks_ardiin['track_m_id'] == int(track_m_id)].index[0]
         
+        # Get the recommended tracks from model withing score using track index
         similarity_scores = cosine_similarity(model_ardiin[track_index], model_ardiin)
+        
+        # Get the similar tracks by sorting the similarity scores
         similar_tracks = list(enumerate(similarity_scores[0]))
         sorted_similar_tracks = sorted(similar_tracks, key=lambda x: x[1], reverse=True)[1:num_recommendations + 1]
         
