@@ -29,32 +29,13 @@ Method: `POST`
 URL: `https://recommendation.mmusic.mn/api/v1/recommendations`
 
 ```
-normal: 
+
 {
     "artist_ids": [],
     "song_ids": [1563],
     "emotions": [],
     "genres": [],
-    "limit": 10,
-    "type": "normal"
-} 
-zohioliin:
-{
-    "artist_ids": [],
-    "song_ids": [5907],
-    "emotions": [],
-    "genres": [],
-    "limit": 10,
-    "type": "zohioliin"
-} 
-ardiin:
-{
-    "artist_ids": [],
-    "song_ids": [1247],
-    "emotions": [],
-    "genres": [],
-    "limit": 10,
-    "type": "ardiin"
+    "limit": 10  
 } 
 
 
