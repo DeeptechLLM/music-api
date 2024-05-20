@@ -25,14 +25,14 @@ def get_recommendation_svc(artist_ids, tracks, emotions, genres):
             for genre in genres:
                 genre_tracks = get_genre_tracks(genre, 5)                
                 
-                genres_recommendation = get_tracks_recommendation(genre_tracks, 1)
+                genres_recommendation = get_tracks_recommendation(genre_tracks, 2)
                 recommended_tracks = recommended_tracks + genres_recommendation
                 
         if len(emotions) > 0:
             for emotion in emotions:
                 emotion_tracks = get_emotion_tracks(emotion, 5)
                 
-                emotions_recommendation = get_tracks_recommendation(emotion_tracks, 1)                
+                emotions_recommendation = get_tracks_recommendation(emotion_tracks, 2)                
                 
                 recommended_tracks = recommended_tracks + emotions_recommendation
         
@@ -56,13 +56,13 @@ def get_tracks_recommendation(tracks, recommend_type=1):
     try: 
         recommended_tracks = []
         for track in tracks:
-            result_model_1 = get_recommendation_1(track, 40)
+            result_model_1 = get_recommendation_base_model(track, 40)
             recommended_tracks = recommended_tracks + result_model_1
-            if recommend_type != 1:
-                result_model_2 = get_recommendation_2(track, 40)
+            if recommend_type == 1:
+                result_model_2 = get_recommendation_custom_model_01(track, 40)
                 recommended_tracks = recommended_tracks + result_model_2
-            if recommend_type != 1:
-                result_model_3 = get_recommendation_3(track, 40)
+            if recommend_type == 1:
+                result_model_3 = get_recommendation_custom_model_02(track, 40)
                 recommended_tracks = recommended_tracks + result_model_3
             
             # recommended_tracks = recommended_tracks + result_model_1 + result_model_2 + result_model_3
@@ -70,7 +70,7 @@ def get_tracks_recommendation(tracks, recommend_type=1):
     except Exception as e:        
         raise Exception(str(e))
 
-def get_recommendation_1(track_m_id, num_recommendations=10):
+def get_recommendation_base_model(track_m_id, num_recommendations=10):
     """Function to get recommendation for single track only for normal model
 
     Args:
@@ -136,7 +136,7 @@ def get_recommendation_1(track_m_id, num_recommendations=10):
         print({"error": str(e)})
         return []
     
-def get_recommendation_2(track_m_id, num_recommendations=20):
+def get_recommendation_custom_model_01(track_m_id, num_recommendations=20):
     """Function to get recommendation for single track only for zohioliin model
 
     Args:
@@ -200,7 +200,7 @@ def get_recommendation_2(track_m_id, num_recommendations=20):
         print({"error": str(e)})
         return []
 
-def get_recommendation_3(track_m_id, num_recommendations=20):
+def get_recommendation_custom_model_02(track_m_id, num_recommendations=20):
     """Function to get recommendation for single track only for ardiin model
 
     Args:
