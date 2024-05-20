@@ -23,8 +23,9 @@ nohup gunicorn -b localhost:5002 app:app > music.log &
 ### Sample Request
 Method: `POST`
 URL: `https://recommendation.mmusic.mn/api/v1/recommendations`
-normal: 
+
 ```
+normal: 
 {
     "artist_ids": [],
     "song_ids": [1563],
