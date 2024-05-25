@@ -31,7 +31,8 @@ class ProdConfig():
     MODEL_ZOHIOLIIN = joblib.load(model_zohioliin)
     MODEL_ARDIIN = joblib.load(model_ardiin)
     
-    GENRE_MAP_BY_NAME = {
+    # Genre mapping between mmusic and music-api
+    GENRE_MAP_WITH_MMUSIC = {
         "hiphop_rap": "hiphop",
         "trap": "hiphop",
         "jazz": "jazz",
@@ -45,16 +46,18 @@ class ProdConfig():
         "country": "pop",
         "rock_alternative": "rock",
         "metal": "rock",
-        "ardiin": "mongol_folk",
-        "mongol_country": "mongol_country",
-        "zohioliin": "mongol_country",
-        "long": "mongol_country",
+        "ardiin": "mongolian folk",
+        "mongol_country": "mongolian country",
+        "zohioliin": "mongolian country",
+        "long": "mongolian country",
         "children": "kids",
         "ethnic": "ethnic",
         "classic": "classic",
         "orchestral": "classic",
         "kids": "kids"
     }
+    
+    # Genre map for model
     GENRE_MAP = {
         "hiphop": ["hiphop", "rap", "triphop"],
         "jazz": ["jazz", "acidjazz","improvisation","jazzfunk","jazzfusion"],
@@ -62,8 +65,30 @@ class ProdConfig():
         "rock": ["alternative", "classicrock", "ethnicrock", "gothic", "grunge", "hardrock", "heavymetal", "indie", "industrial", "instrumentalrock", "metal", "postrock", "progressive", "psychedelic", "punkrock", "rock", "rocknroll"],
         "ethnic": ["african", "bossanova", "ethnicrock", "ethno", "folk", "latin", "newage", "oriental", "world"],
         "classic": ["classical", "orchestral", "soundtrack"],        
-        "mongol_country": ["mongolian country"],
+        "mongolian country": ["mongolian country"],
         "mongol_folk": ["mongolian folk"],
         "kids": ["kids"]
+    }
+    
+    EMOTION_MAP_WITH_MMUSIC = {
+        "angry": "angry",
+        "calm": "calm",
+        "happy": "happy",
+        "sad": "sad",
+        "happy,calm": "calmhappy",
+        "calm,sad": "calmsad",
+        "sad,angry": "angrysad",
+        "angry,happy": "angryhappy"        
+    }
+    
+    EMOTION_MAP = {
+        "angry": ["dark", "deep", "heavy", "horror", "powerful", "commercial", "emotional"],
+        "calm": ["ambiental", "background", "calm", "meditative", "mellow", "relaxing", "soft", "soundscape"],
+        "happy": ["adventure", "children", "cool", "fun", "game", "groovy", "happy", "holiday", "inspiring", "love", "party", "positive", "summer", "upbeat", "uplifting", "space"],
+        "sad": ["melancholic", "sad"],
+        "calmhappy": ["ballad", "documentary", "nature", "romantic", "christmas", "hopeful"],
+        "calmsad": ["dreamy", "melodic", "advertising", "slow"],
+        "angrysad": ["drama", "dramatic", "retro", "travel", "motivational", "sexy"],
+        "angryhappy": ["action", "energetic", "epic", "fast", "film", "movie", "sport", "trailer", "corporate"]
     }
 
