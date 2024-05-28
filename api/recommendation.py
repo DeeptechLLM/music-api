@@ -31,10 +31,11 @@ def get_recommendation():
     song_ids = data.get('song_ids', [])
     emotions = data.get('emotions', [])
     genres = data.get('genres', [])
+    limit = data.get('limit', 40)
     
     try:      
         
-        result, msg = get_recommendation_svc(artist_ids, song_ids, emotions, genres)
+        result, msg = get_recommendation_svc(artist_ids, song_ids, emotions, genres, limit)
 
         return make_response({'statusMessage': 'success', 'tracks': result, 'message': msg}, 201)
     except Exception as e:

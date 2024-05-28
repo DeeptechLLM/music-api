@@ -3,7 +3,7 @@ from sklearn.metrics.pairwise import cosine_similarity
 from utils.simple_utils import remove_duplicate_items
 
 
-def get_recommendation_svc(artist_ids, tracks, emotions, genres):
+def get_recommendation_svc(artist_ids, tracks, emotions, genres, limit):
     """Main function to get recommendation
 
     Args:
@@ -82,7 +82,7 @@ def get_recommendation_svc(artist_ids, tracks, emotions, genres):
         o_recommend = sorted(c_recommend, key=lambda item: item["score"], reverse=True)
         recommended_tracks = [{k: v for k, v in item.items() if k != "parent_genre_id" and k != "parent_genre_name"} for item in o_recommend]
         # recommended_tracks = [{k: v for k, v in item.items() if k != "score"} for item in o_recommend]
-        return recommended_tracks, msg
+        return recommended_tracks[:limit], msg
     except Exception as e: 
         raise Exception(str(e))
 
