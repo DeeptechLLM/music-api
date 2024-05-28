@@ -170,8 +170,7 @@ def get_recommendation_base_model(track_m_id, num_recommendations=10):
         # Get the track index from recommendation data                
         track_index = df_tracks[df_tracks['track_m_id'] == int(track_m_id)].index[0]
         # track_genre = df_tracks.iloc[track_index]["parent_genre_name"]
-        # print("tracks genre: ", track_genre)
-        
+                
         # Get the recommended tracks from model withing score using track index
         similarity_scores = cosine_similarity(model[track_index], model)
 
@@ -206,7 +205,7 @@ def get_recommendation_base_model(track_m_id, num_recommendations=10):
             }
             
             recommendations.append(track_info)
-        # filtered_genre_tracks = [track for track in recommendations if track['parent_genre_name']==track_genre]
+        
         return recommendations, None
     
     except TypeError:
