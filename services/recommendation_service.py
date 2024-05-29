@@ -24,6 +24,7 @@ def get_recommendation_svc(artist_ids, tracks, emotions, genres, limit):
             if genres:
                 for genre in genres: 
                     try: 
+                       
                         track_genre = current_app.config['GENRE_MAP_WITH_MMUSIC'][genre]
                         genre_tracks, err = get_tracks_with_genre_recommendation(tracks, track_genre)
                         if err:
@@ -55,7 +56,7 @@ def get_recommendation_svc(artist_ids, tracks, emotions, genres, limit):
             if genres:
                 for genre in genres:                     
                     try: 
-                        track_genre = current_app.config['GENRE_MAP_WITH_MMUSIC'][genre]
+                        track_genre = current_app.config['GENRE_MAP_WITH_MMUSIC'].get(genre)                        
                         genre_tracks, err = get_genre_tracks(track_genre, 200)
                         if err: 
                             msg.append(err)                              
@@ -69,7 +70,7 @@ def get_recommendation_svc(artist_ids, tracks, emotions, genres, limit):
                     
             if emotions:
                 for emotion in emotions:
-                    track_emotion = current_app.config['EMOTION_MAP_WITH_MMUSIC'][emotion]
+                    track_emotion = current_app.config['EMOTION_MAP_WITH_MMUSIC'].get(emotion)
                     emotion_tracks, err = get_emotion_tracks(track_emotion, 200)
                     if err:
                         msg.append(err)
@@ -201,7 +202,7 @@ def get_recommendation_base_model(track_m_id, num_recommendations=10):
                 "artist_name": artist_name,
                 "parent_genre_id": int(parent_gid),
                 "parent_genre_name": parent_name,
-                "score": score
+                "score": float(score)
             }
             
             recommendations.append(track_info)
@@ -271,7 +272,7 @@ def get_recommendation_custom_model_01(track_m_id, num_recommendations=20):
                 "track_m_id": int(track_m_id),
                 "track_name": track_name,
                 "artist_name": artist_name,
-                "score": score
+                "score": float(score)
             }
             recommendations.append(track_info)
 
@@ -338,7 +339,7 @@ def get_recommendation_custom_model_02(track_m_id, num_recommendations=20):
                 "track_m_id": int(track_m_id),
                 "track_name": track_name,
                 "artist_name": artist_name,
-                "score": score
+                "score": float(score)
             }
             recommendations.append(track_info)
 
@@ -376,27 +377,25 @@ def get_genre_tracks(genre, num_tracks=40):
     recommended_list = []
     genre_tracks_1 = []
     genre_tracks_2 = []
-    genres = current_app.config['DF_GENRES']
-    
-    genres_in_genre = current_app.config['GENRE_MAP'][genre]
+    genres = current_app.config['DF_GENRES']    
+    genres_in_genre = current_app.config['GENRE_MAP'].get(genre)
     
     try: 
 
-        for genre_name in genres_in_genre: 
-            if genre_name == 'mongolian country' or genre_name == 'mongolian folk':
-                
+        for genre_name in genres_in_genre:             
+            if genre_name == 'mongolian country' or genre_name == 'mongolian folk':                
                 # Filtering out all songs in the Genre column for non-zero or specific values
-                filtered_df = genres[genres['parent_genre_name'] == genre_name]
+                filtered_df = genres[genres['parent_genre_name'].str.contains(genre_name)]
                 
                 # Shuffling the songs of the genre(descending)
                 shuffled_df = filtered_df.sample(frac=1)
                 # sorted_df = filtered_df.sort_values(by=[genre_name], ascending=False)
                 
                 # Retrieving <num_tracks> tracks from sorted list
-                ordered_genre_tracks = shuffled_df[['artist_name', 'parent_genre_id', 'parent_genre_name', 'track_id', 'track_m_id', 'track_name']].values.tolist()        
+                ordered_genre_tracks = shuffled_df[['artist_name', 'parent_genre_id', 'parent_genre_name', 'track_id', 'track_m_id', 'track_name']].values.tolist()                
                 ordered_genre_tracks = [[artist_name, int(parent_genre_id), parent_genre_name, int(track_id), int(track_m_id), track_name] for artist_name, parent_genre_id, parent_genre_name, track_id, track_m_id, track_name in ordered_genre_tracks][:num_tracks]
-                            
-                for artist_name, parent_genre_id, parent_genre_name, track_id, track_m_id, track_name in ordered_genre_tracks:
+                                            
+                for artist_name, parent_genre_id, parent_genre_name, track_id, track_m_id, track_name in ordered_genre_tracks:                    
                     track_info = {                
                         "track_id": track_id,
                         "track_m_id": track_m_id,
@@ -429,18 +428,17 @@ def get_genre_tracks(genre, num_tracks=40):
                         "artist_name": artist_name,
                         "parent_genre_id": parent_genre_id,
                         "parent_genre_name": parent_genre_name,
-                        "score": value
+                        "score": float(value)
                 }
                     genre_tracks_2.append(track_info)
                     # print("track_id: {}, track_m_id: {}, value: {}, genre: {}".format(track_id, track_m_id, value, parent_genre_name))
                 genre_tracks_2 = [track for track in genre_tracks_2 if track['parent_genre_name'] == genre]
-                                
+        recommended_list = genre_tracks_1 + genre_tracks_2                        
     except Exception as e: 
         print({"error": str(e)})
         err = {"error": str(e)}
-        return [], err
+        return [], err    
     
-    recommended_list = recommended_list + genre_tracks_2
     return recommended_list, None
 
 
@@ -485,7 +483,7 @@ def get_emotion_tracks(emotion, num_tracks=40):
                             "artist_name": artist_name,
                             "parent_genre_id": parent_genre_id,
                             "parent_genre_name": parent_genre_name,
-                            "score": value
+                            "score": float(value)
                     }
                     emotion_tracks.append(track_info)
         recommended_list = recommended_list + emotion_tracks

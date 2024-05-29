@@ -66,7 +66,7 @@ class ProdConfig():
         "ethnic": ["african", "bossanova", "ethnicrock", "ethno", "folk", "latin", "newage", "oriental", "world"],
         "classic": ["classical", "orchestral", "soundtrack"],        
         "mongolian country": ["mongolian country"],
-        "mongol_folk": ["mongolian folk"],
+        "mongolian folk": ["mongolian folk"],
         "kids": ["kids"]
     }
     
