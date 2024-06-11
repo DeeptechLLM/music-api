@@ -2,3 +2,5 @@ music/
 *.env
 __pycache__
 **/__pycache__/**
+logs/*
+logs
