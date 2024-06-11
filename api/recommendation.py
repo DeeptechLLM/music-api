@@ -1,14 +1,14 @@
 from flask import Blueprint, request, make_response
 from services.recommendation_service import get_recommendation_svc
 from marshmallow import Schema, fields, ValidationError
+from datetime import datetime
 
 class RecommendationSchema(Schema):
 
-    artist_ids = fields.List(fields.Integer)
     song_ids = fields.List(fields.Integer)
     emotions = fields.List(fields.String(), required=False)
     genres = fields.List(fields.String(), required=False)
-    # type = fields.String()
+    type = fields.String()
     limit = fields.Integer()
 
 # Route
@@ -27,16 +27,20 @@ def get_recommendation():
     except ValidationError as e:
         return make_response({'message': str(e)}, 400)    
     
-    artist_ids = data.get('artist_ids', [])  # Handle optional parameters with defaults    
+    # Handle optional parameters with defaults    
     song_ids = data.get('song_ids', [])
     emotions = data.get('emotions', [])
     genres = data.get('genres', [])
     limit = data.get('limit', 40)
+    type = data.get('type', 'home')
     
     try:      
-        
-        result, msg = get_recommendation_svc(artist_ids, song_ids, emotions, genres, limit)
-
+        today = datetime.now()
+        result, msg = get_recommendation_svc(song_ids, emotions, genres, limit, type)
+        log = {"request": data, "response": result, "message": msg}
+        with open('logs/recommendation-' + today.strftime('%Y-%b-%d_%H-%M-%S') + '.log', 'a', encoding='utf-8') as f:
+            # print("log writing: ", log)
+            f.write(str(log) + '\n')
         return make_response({'statusMessage': 'success', 'tracks': result, 'message': msg}, 201)
     except Exception as e:
         return make_response({'message': str(e)}, 404)

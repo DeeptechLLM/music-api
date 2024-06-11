@@ -2,12 +2,10 @@ from flask import current_app
 from sklearn.metrics.pairwise import cosine_similarity
 from utils.simple_utils import remove_duplicate_items
 
-
-def get_recommendation_svc(artist_ids, tracks, emotions, genres, limit):
+def get_recommendation_svc(tracks, emotions, genres, limit, type):
     """Main function to get recommendation
 
-    Args:
-        artist_ids (list): list of artist_ids
+    Args        
         tracks (list): list of track_ids
         emotions (list): list of emotions
         genres (list): list of genres        
@@ -19,65 +17,82 @@ def get_recommendation_svc(artist_ids, tracks, emotions, genres, limit):
     recommended_tracks = []
     msg = []
     try: 
- 
-        if tracks:
-            if genres:
-                for genre in genres: 
-                    try: 
-                       
-                        track_genre = current_app.config['GENRE_MAP_WITH_MMUSIC'][genre]
-                        genre_tracks, err = get_tracks_with_genre_recommendation(tracks, track_genre)
-                        if err:
-                            msg.append(err)
-                        recommended_tracks = recommended_tracks + genre_tracks
-                    except KeyError:
-                        print("Genre not found: ", genre)
-                        msg.append("Genre not found: {}".format(genre))
-
-            if emotions:
-                for emotion in emotions:
-                    try: 
-                        track_emotion = current_app.config['EMOTION_MAP_WITH_MMUSIC'][emotion]
-                        emotion_tracks, err = get_tracks_with_emotion_recommendation(tracks, track_emotion)
-                        # emotion_tracks, err = get_emotion_tracks(track_emotion, 200)
-                        if err:
-                            msg.append(err)
-                        recommended_tracks = recommended_tracks + emotion_tracks
-                    except KeyError:
-                        print("Emotion not found: ", emotion)
-                        msg.append("Emotion not found: {}".format(emotion))
-                
-            if not genres and not emotions: 
-                tracks_recommendation, err = get_tracks_recommendation(tracks) 
-                if err:
-                    msg.append(err)
-                recommended_tracks = recommended_tracks + tracks_recommendation
+        if type == 'home':
+            track_genres = [get_tracks_genre(track) for track in tracks]
+            track_first_genre = max(set(track_genres), key=track_genres.count)            
+            print("found top genre: ", track_first_genre)
+            tracks_recommendation_1, err = get_genre_tracks(track_first_genre, 200)
+            track_second_genre = sorted(set(track_genres), key=track_genres.count)[-2]
+            print("found second genre: ", track_second_genre)
+            tracks_recommendation_2, err = get_genre_tracks(track_second_genre, 200)
+            recommended_tracks = recommended_tracks + tracks_recommendation_1 + tracks_recommendation_2
+        elif type == 'emotion':
+           
+            emotion = emotions[0]
+            track_emotion = current_app.config['EMOTION_MAP_WITH_MMUSIC'][emotion]
+            emotion_tracks, err = get_emotion_tracks(emotion, genres)
+                    
+            print("recommending: ", emotion_tracks)
+            recommended_tracks = emotion_tracks
         else:
-            if genres:
-                for genre in genres:                     
-                    try: 
-                        track_genre = current_app.config['GENRE_MAP_WITH_MMUSIC'].get(genre)                        
-                        genre_tracks, err = get_genre_tracks(track_genre, 200)
-                        if err: 
-                            msg.append(err)                              
+            if tracks:
+                if genres:
+                    for genre in genres: 
+                        try: 
+                        
+                            track_genre = current_app.config['GENRE_MAP_WITH_MMUSIC'][genre]
+                            genre_tracks, err = get_tracks_with_genre_recommendation(tracks, track_genre)
+                            if err:
+                                msg.append(err)
+                            recommended_tracks = recommended_tracks + genre_tracks
+                        except KeyError:
+                            print("Genre not found: ", genre)
+                            msg.append("Genre not found: {}".format(genre))
+
+                if emotions:
+                    for emotion in emotions:
+                        try: 
+                            track_emotion = current_app.config['EMOTION_MAP_WITH_MMUSIC'][emotion]
+                            emotion_tracks, err = get_tracks_with_emotion_recommendation(tracks, track_emotion)
+                            # emotion_tracks, err = get_emotion_tracks(track_emotion, 200)
+                            if err:
+                                msg.append(err)
+                            recommended_tracks = recommended_tracks + emotion_tracks
+                        except KeyError:
+                            print("Emotion not found: ", emotion)
+                            msg.append("Emotion not found: {}".format(emotion))
                     
-                        # filtered_genre_tracks = [track for track in genre_tracks if track['parent_genre_name']==track_genre]
-                    
-                        recommended_tracks = recommended_tracks + genre_tracks
-                    except KeyError:
-                        print("Genre not found: ", genre)
-                        msg.append("Genre not found: {}".format(genre))
-                    
-            if emotions:
-                for emotion in emotions:
-                    track_emotion = current_app.config['EMOTION_MAP_WITH_MMUSIC'].get(emotion)
-                    emotion_tracks, err = get_emotion_tracks(track_emotion, 200)
+                if not genres and not emotions: 
+                    tracks_recommendation, err = get_tracks_recommendation(tracks) 
                     if err:
                         msg.append(err)
-                
-                # emotions_recommendation = get_tracks_recommendation(emotion_tracks, 2)                
-                
-                    recommended_tracks = recommended_tracks + emotion_tracks             
+                    recommended_tracks = recommended_tracks + tracks_recommendation
+            else:
+                if genres:
+                    for genre in genres:                     
+                        try: 
+                            track_genre = current_app.config['GENRE_MAP_WITH_MMUSIC'].get(genre)                        
+                            genre_tracks, err = get_genre_tracks(track_genre, 200)
+                            if err: 
+                                msg.append(err)                              
+                        
+                            # filtered_genre_tracks = [track for track in genre_tracks if track['parent_genre_name']==track_genre]
+                        
+                            recommended_tracks = recommended_tracks + genre_tracks
+                        except KeyError:
+                            print("Genre not found: ", genre)
+                            msg.append("Genre not found: {}".format(genre))
+                        
+                if emotions:
+                    for emotion in emotions:
+                        track_emotion = current_app.config['EMOTION_MAP_WITH_MMUSIC'].get(emotion)
+                        emotion_tracks, err = get_emotion_tracks(track_emotion, 200)
+                        if err:
+                            msg.append(err)
+                    
+                    # emotions_recommendation = get_tracks_recommendation(emotion_tracks, 2)                
+                    
+                        recommended_tracks = recommended_tracks + emotion_tracks             
        
         c_recommend = remove_duplicate_items(recommended_tracks, "track_id")
         o_recommend = sorted(c_recommend, key=lambda item: item["score"], reverse=True)
@@ -442,7 +457,7 @@ def get_genre_tracks(genre, num_tracks=40):
     return recommended_list, None
 
 
-def get_emotion_tracks(emotion, num_tracks=40):
+def get_emotion_tracks(emotion, genres, num_tracks=40):
     """Function to retrieve top tracks of given emotion
 
     Args:
@@ -485,7 +500,9 @@ def get_emotion_tracks(emotion, num_tracks=40):
                             "parent_genre_name": parent_genre_name,
                             "score": float(value)
                     }
-                    emotion_tracks.append(track_info)
+
+                    if parent_genre_name in genres:
+                        emotion_tracks.append(track_info)
         recommended_list = recommended_list + emotion_tracks
 
     except Exception as e: 
@@ -494,3 +511,21 @@ def get_emotion_tracks(emotion, num_tracks=40):
         return [], err
     return recommended_list, None
 
+def get_tracks_genre(track_id):
+    """Function to get genre of a track
+
+    Args:
+        track_id (number): Single track id
+
+    Returns:
+        string: genre name
+    """
+    try:    
+        
+        df_tracks = current_app.config['DF_TRACKS']
+        track_genre = df_tracks[df_tracks['track_m_id'] == int(track_id)]['parent_genre_name'].values[0]
+        return track_genre
+    except Exception as e: 
+        print({"error": str(e)})
+        err = {"error": str(e)}
+        return None, err
