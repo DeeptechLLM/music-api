@@ -446,6 +446,8 @@ def get_genre_tracks(genre, num_tracks=40):
                 ordered_genre_tracks = [[artist_name, int(track_id), int(track_m_id), track_name, int(parent_genre_id), parent_genre_name, value, ] for artist_name, track_id, track_m_id, track_name, parent_genre_id, parent_genre_name, value in ordered_genre_tracks][:num_tracks]
                             
                 for artist_name, track_id, track_m_id, track_name, parent_genre_id, parent_genre_name, value in ordered_genre_tracks:
+                    if value > 1:
+                        value = value / 100
                     track_info = {                
                         "track_id": track_id,
                         "track_m_id": track_m_id,
