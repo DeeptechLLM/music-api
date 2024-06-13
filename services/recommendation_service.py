@@ -19,7 +19,9 @@ def get_recommendation_svc(tracks, emotions, genres, limit, recc_type):
     try: 
         if recc_type == 'home':
             track_genres = [get_tracks_genre(track) for track in tracks]
-            track_genres = track_genres + genres
+            genres_mapped = [current_app.config['GENRE_MAP_WITH_MMUSIC'][genre] for genre in genres]
+            print("merging genres:",track_genres, genres_mapped)
+            track_genres = track_genres + genres_mapped
             
             track_first_genre = max(set(track_genres), key=track_genres.count)                        
             tracks_recommendation_1, err = get_genre_tracks(track_first_genre, 200)            
@@ -100,8 +102,7 @@ def get_recommendation_svc(tracks, emotions, genres, limit, recc_type):
                         
                             recommended_tracks = recommended_tracks + emotion_tracks             
        
-        c_recommend = remove_duplicate_items(recommended_tracks, "track_id")
-        print("recommended tracks: ", recommended_tracks)
+        c_recommend = remove_duplicate_items(recommended_tracks, "track_id")        
         o_recommend = sorted(c_recommend, key=lambda item: item["score"], reverse=True)
         recommended_tracks = [{k: v for k, v in item.items() if k != "parent_genre_id" and k != "parent_genre_name"} for item in o_recommend]
         # recommended_tracks = [{k: v for k, v in item.items() if k != "score"} for item in o_recommend]
@@ -596,7 +597,10 @@ def get_tracks_genre(track_id):
         
         df_tracks = current_app.config['DF_TRACKS']
         track_genre = df_tracks[df_tracks['track_m_id'] == int(track_id)]['parent_genre_name'].values[0]
+        print("found genre for track_m_id {} : {} ".format(track_id, df_tracks[df_tracks['track_m_id'] == int(track_id)]))
         return track_genre
+    except IndexError as e:
+        print("No genre found for track_m_id {} : {}".format(track_id, e))
     except Exception as e: 
         print({"error": str(e)})
         err = {"error": str(e)}
