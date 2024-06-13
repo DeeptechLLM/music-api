@@ -18,7 +18,9 @@ def get_recommendation_svc(tracks, emotions, genres, limit, recc_type):
     msg = []
     try: 
         if recc_type == 'home':
-            track_genres = [get_tracks_genre(track) for track in tracks]            
+            track_genres = [get_tracks_genre(track) for track in tracks]
+            track_genres = track_genres + genres
+            
             track_first_genre = max(set(track_genres), key=track_genres.count)                        
             tracks_recommendation_1, err = get_genre_tracks(track_first_genre, 200)            
             recommended_tracks = recommended_tracks + tracks_recommendation_1            
