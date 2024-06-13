@@ -2,7 +2,7 @@ from flask import current_app
 from sklearn.metrics.pairwise import cosine_similarity
 from utils.simple_utils import remove_duplicate_items
 
-def get_recommendation_svc(tracks, emotions, genres, limit, type):
+def get_recommendation_svc(tracks, emotions, genres, limit, recc_type):
     """Main function to get recommendation
 
     Args        
@@ -17,22 +17,21 @@ def get_recommendation_svc(tracks, emotions, genres, limit, type):
     recommended_tracks = []
     msg = []
     try: 
-        if type == 'home':
+        if recc_type == 'home':
             track_genres = [get_tracks_genre(track) for track in tracks]
             track_first_genre = max(set(track_genres), key=track_genres.count)            
-            print("found top genre: ", track_first_genre)
+            
             tracks_recommendation_1, err = get_genre_tracks(track_first_genre, 200)
             track_second_genre = sorted(set(track_genres), key=track_genres.count)[-2]
-            print("found second genre: ", track_second_genre)
+            
             tracks_recommendation_2, err = get_genre_tracks(track_second_genre, 200)
             recommended_tracks = recommended_tracks + tracks_recommendation_1 + tracks_recommendation_2
-        elif type == 'emotion':
+        elif recc_type == 'emotion':
            
             emotion = emotions[0]
             track_emotion = current_app.config['EMOTION_MAP_WITH_MMUSIC'][emotion]
-            emotion_tracks, err = get_emotion_tracks(emotion, genres)
-                    
-            print("recommending: ", emotion_tracks)
+            emotion_tracks, err = get_emotion_tracks(emotion, genres)                    
+            
             recommended_tracks = emotion_tracks
         else:
             if tracks:
@@ -83,16 +82,16 @@ def get_recommendation_svc(tracks, emotions, genres, limit, type):
                             print("Genre not found: ", genre)
                             msg.append("Genre not found: {}".format(genre))
                         
-                if emotions:
-                    for emotion in emotions:
-                        track_emotion = current_app.config['EMOTION_MAP_WITH_MMUSIC'].get(emotion)
-                        emotion_tracks, err = get_emotion_tracks(track_emotion, 200)
-                        if err:
-                            msg.append(err)
-                    
-                    # emotions_recommendation = get_tracks_recommendation(emotion_tracks, 2)                
-                    
-                        recommended_tracks = recommended_tracks + emotion_tracks             
+                    if emotions:
+                        for emotion in emotions:
+                            track_emotion = current_app.config['EMOTION_MAP_WITH_MMUSIC'].get(emotion)
+                            emotion_tracks, err = get_emotion_tracks(track_emotion, genres, 200)
+                            if err:
+                                msg.append(err)
+                        
+                        # emotions_recommendation = get_tracks_recommendation(emotion_tracks, 2)                
+                        
+                            recommended_tracks = recommended_tracks + emotion_tracks             
        
         c_recommend = remove_duplicate_items(recommended_tracks, "track_id")
         o_recommend = sorted(c_recommend, key=lambda item: item["score"], reverse=True)
