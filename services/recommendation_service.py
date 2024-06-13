@@ -18,19 +18,24 @@ def get_recommendation_svc(tracks, emotions, genres, limit, recc_type):
     msg = []
     try: 
         if recc_type == 'home':
-            track_genres = [get_tracks_genre(track) for track in tracks]
-            track_first_genre = max(set(track_genres), key=track_genres.count)            
+            track_genres = [get_tracks_genre(track) for track in tracks]            
+            track_first_genre = max(set(track_genres), key=track_genres.count)                        
+            tracks_recommendation_1, err = get_genre_tracks(track_first_genre, 200)            
+            recommended_tracks = recommended_tracks + tracks_recommendation_1            
             
-            tracks_recommendation_1, err = get_genre_tracks(track_first_genre, 200)
-            track_second_genre = sorted(set(track_genres), key=track_genres.count)[-2]
+            if len(track_genres) > 1:
+                track_second_genre = sorted(set(track_genres), key=track_genres.count)[-2]                        
+                tracks_recommendation_2, err = get_genre_tracks(track_second_genre, 200)
+                recommended_tracks = recommended_tracks + tracks_recommendation_2
             
-            tracks_recommendation_2, err = get_genre_tracks(track_second_genre, 200)
-            recommended_tracks = recommended_tracks + tracks_recommendation_1 + tracks_recommendation_2
+                
         elif recc_type == 'emotion':
            
             emotion = emotions[0]
             track_emotion = current_app.config['EMOTION_MAP_WITH_MMUSIC'][emotion]
-            emotion_tracks, err = get_emotion_tracks(emotion, genres)                    
+            print("tracks emotino: ", track_emotion)
+            genres_mapped = [current_app.config['GENRE_MAP_WITH_MMUSIC'][genre] for genre in genres]
+            emotion_tracks, err = get_tracks_by_emotion(track_emotion, genres_mapped)              
             
             recommended_tracks = emotion_tracks
         else:
@@ -94,10 +99,14 @@ def get_recommendation_svc(tracks, emotions, genres, limit, recc_type):
                             recommended_tracks = recommended_tracks + emotion_tracks             
        
         c_recommend = remove_duplicate_items(recommended_tracks, "track_id")
+        print("recommended tracks: ", recommended_tracks)
         o_recommend = sorted(c_recommend, key=lambda item: item["score"], reverse=True)
         recommended_tracks = [{k: v for k, v in item.items() if k != "parent_genre_id" and k != "parent_genre_name"} for item in o_recommend]
         # recommended_tracks = [{k: v for k, v in item.items() if k != "score"} for item in o_recommend]
         return recommended_tracks[:limit], msg
+    except IndexError:
+        print("No second genre found.")
+                
     except Exception as e: 
         raise Exception(str(e))
 
@@ -502,6 +511,66 @@ def get_emotion_tracks(emotion, genres, num_tracks=40):
 
                     if parent_genre_name in genres:
                         emotion_tracks.append(track_info)
+        recommended_list = recommended_list + emotion_tracks
+
+    except Exception as e: 
+        print({"error": str(e)})
+        err = {"error": str(e)}
+        return [], err
+    return recommended_list, None
+
+def get_tracks_by_emotion(emotion, genres, num_tracks=40):
+    """Function to retrieve top tracks of given emotion
+
+    Args:
+        emotion_name (string): Given emotion name
+        num_tracks (int, optional): limit number of tracks.
+
+    Returns:
+        list: emotion's track list
+    """
+    recommended_list = []
+    emotion_tracks = []
+    
+    emotion_model = current_app.config['DF_EMOTIONS']    
+    
+    try: 
+        
+        # emotion_map = current_app.config['EMOTION_MAP']
+        # if emotion in emotion_map:            
+        #     emotion_list = emotion_map.get(emotion)
+            
+        #     for emotion_name in emotion_list: 
+        
+        # Filtering out all songs in the Emotion column for non-zero or specific values
+        filtered_emotions = emotion_model[emotion_model['child'] == int(emotion)]        
+                
+        # Shuffling the songs of the emotion
+        shuffled_emotions = filtered_emotions.sample(frac=1).reset_index(drop=True)
+        
+        if len(shuffled_emotions) < num_tracks:
+            num_tracks = len(shuffled_emotions)
+            
+        selected_list = shuffled_emotions.head(num_tracks)
+            
+        # Retrieving <num_tracks> tracks from sorted list
+        ordered_emotion_tracks = selected_list[['artist_name', 'parent_genre_id', 'parent_genre_name', 'track_id', 'track_m_id', 'track_name']].values.tolist()
+        ordered_emotion_tracks = [[artist_name, int(parent_genre_id), parent_genre_name, int(track_id), int(track_m_id), track_name] for artist_name, parent_genre_id, parent_genre_name, track_id, track_m_id, track_name in ordered_emotion_tracks][:num_tracks]
+
+        # print("Top {} {} songs:".format(num_tracks, emotion_name))
+        for artist_name, parent_genre_id, parent_genre_name, track_id, track_m_id, track_name in ordered_emotion_tracks:
+            track_info = {                
+                "track_id": track_id,
+                "track_m_id": track_m_id,
+                "track_name": track_name,
+                "artist_name": artist_name,
+                "parent_genre_id": parent_genre_id,
+                "parent_genre_name": parent_genre_name,
+                "score": float(1)
+            }
+            
+            if parent_genre_name in genres:
+                emotion_tracks.append(track_info)
         recommended_list = recommended_list + emotion_tracks
 
     except Exception as e: 

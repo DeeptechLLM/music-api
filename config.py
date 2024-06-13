@@ -71,6 +71,16 @@ class ProdConfig():
     }
     
     EMOTION_MAP_WITH_MMUSIC = {
+        "angry": "1",
+        "calm": "3",        
+        "sad": "4",
+        "happy,calm": "5",
+        "calm,sad": "2",
+        "sad,angry": "7",
+        "angry,happy": "6"        
+    }
+    
+    EMOTION_MAP_WITH_MMUSIC_OLD = {
         "angry": "angry",
         "calm": "calm",
         "happy": "happy",
