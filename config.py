@@ -48,7 +48,7 @@ class ProdConfig():
         "metal": "rock",
         "ardiin": "mongolian folk",
         "mongol_country": "mongolian country",
-        "zohioliin": "mongolian country",
+        "niitiin": "mongolian country",
         "long": "mongolian country",
         "children": "kids",
         "ethnic": "ethnic",
