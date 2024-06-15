@@ -20,12 +20,12 @@ def get_recommendation_svc(tracks, emotions, genres, limit, recc_type):
         if recc_type == 'home':
             track_genres = [get_tracks_genre(track) for track in tracks]
             genres_mapped = [current_app.config['GENRE_MAP_WITH_MMUSIC'][genre] for genre in genres]
-            print("merging genres:",track_genres, genres_mapped)
+            
             track_genres = track_genres + genres_mapped
             
             track_first_genre = max(set(track_genres), key=track_genres.count)                        
             tracks_recommendation_1, err = get_genre_tracks(track_first_genre, 200)            
-            recommended_tracks = recommended_tracks + tracks_recommendation_1            
+            recommended_tracks = recommended_tracks + tracks_recommendation_1
             
             if len(track_genres) > 1:
                 track_second_genre = sorted(set(track_genres), key=track_genres.count)[-2]                        
@@ -37,7 +37,7 @@ def get_recommendation_svc(tracks, emotions, genres, limit, recc_type):
            
             emotion = emotions[0]
             track_emotion = current_app.config['EMOTION_MAP_WITH_MMUSIC'][emotion]
-            print("tracks emotino: ", track_emotion)
+            
             genres_mapped = [current_app.config['GENRE_MAP_WITH_MMUSIC'][genre] for genre in genres]
             emotion_tracks, err = get_tracks_by_emotion(track_emotion, genres_mapped)              
             
