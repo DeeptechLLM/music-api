@@ -1,6 +1,8 @@
 from flask import current_app
 from sklearn.metrics.pairwise import cosine_similarity
 from utils.simple_utils import remove_duplicate_items
+from collections import Counter
+from math import ceil
 
 def get_recommendation_svc(tracks, emotions, genres, limit, recc_type):
     """Main function to get recommendation
@@ -8,7 +10,9 @@ def get_recommendation_svc(tracks, emotions, genres, limit, recc_type):
     Args        
         tracks (list): list of track_ids
         emotions (list): list of emotions
-        genres (list): list of genres        
+        genres (list): list of genres       
+        limit (int): limit number of recommended tracks
+        recc_type (string): type of recommendation 
 
     Returns:
         list: recommended track list
@@ -17,20 +21,65 @@ def get_recommendation_svc(tracks, emotions, genres, limit, recc_type):
     recommended_tracks = []
     msg = []
     try: 
-        if recc_type == 'home':
-            track_genres = [get_tracks_genre(track) for track in tracks]
+        if recc_type == 'home':            
+            
+            # Get the genres of the tracks
+            track_genres = [get_tracks_genre(track) for track in tracks if get_tracks_genre(track) != None]
             genres_mapped = [current_app.config['GENRE_MAP_WITH_MMUSIC'][genre] for genre in genres]
+            genres_mapped.extend(genres_mapped)
             
             track_genres = track_genres + genres_mapped
             
+            # Count the occurence of each genre
+            genre_counts = Counter(track_genres)
+            
+            # Calculate the total number of genres
+            total_genres = len(track_genres)
+            
+            # Calculate the percentage of each genre which is more than 10%
+            genre_percentages = {genre: count / total_genres for genre, count in genre_counts.items() if count / total_genres >= 0.1}
+            
+            # increase all genre percentages until all percentages sum up to 1
+            while sum(genre_percentages.values()) < 1:
+                for genre in genre_percentages.keys():
+                    genre_percentages[genre] += 0.01
+            
+            sorted_genre_percentages = sorted(genre_percentages.items(), key=lambda x: x[1], reverse=True)
+            for genre, percentage in sorted_genre_percentages:                
+                genre_percentage = int(ceil(percentage * 100) * (limit/100))
+                print("percentage of {}: {}".format(limit, genre_percentage))
+                tracks_recommendation, err = get_genre_tracks(genre, genre_percentage)    
+                recommended_tracks = recommended_tracks + tracks_recommendation     
+                
+            c_recommend = remove_duplicate_items(recommended_tracks, "track_id")        
+            o_recommend = sorted(c_recommend, key=lambda item: item["score"], reverse=True)
+            recommended_tracks = [{k: v for k, v in item.items() if k != "parent_genre_id" and k != "parent_genre_name"} for item in o_recommend]
+            # recommended_tracks = [{k: v for k, v in item.items() if k != "score"} for item in o_recommend]
+            return recommended_tracks, msg   
+        
             track_first_genre = max(set(track_genres), key=track_genres.count)                        
             tracks_recommendation_1, err = get_genre_tracks(track_first_genre, 200)            
-            recommended_tracks = recommended_tracks + tracks_recommendation_1
+            # recommended_tracks = recommended_tracks + tracks_recommendation_1
             
             if len(track_genres) > 1:
                 track_second_genre = sorted(set(track_genres), key=track_genres.count)[-2]                        
                 tracks_recommendation_2, err = get_genre_tracks(track_second_genre, 200)
-                recommended_tracks = recommended_tracks + tracks_recommendation_2
+                # recommended_tracks = recommended_tracks + tracks_recommendation_2
+                num_tracks_1 = int(genre_counts[track_first_genre] * genre_percentages.get(track_first_genre))
+                # num_tracks_1 = int(len(tracks_recommendation_1) * genre_percentages.get(track_first_genre))
+                num_tracks_2 = int(genre_counts[track_second_genre] * genre_percentages.get(track_second_genre))
+                # num_tracks_2 = int(len(tracks_recommendation_2) * genre_percentages.get(track_second_genre))
+                
+                selected_tracks_1 = tracks_recommendation_1[:genre_counts[track_first_genre]]
+                selected_tracks_2 = tracks_recommendation_2[:genre_counts[track_second_genre]]
+               
+                merged_tracks = selected_tracks_1 + selected_tracks_2
+                print("most common genre: ", track_first_genre, genre_counts[track_first_genre])
+                print("second most common genre: ", track_second_genre, genre_counts[track_second_genre])
+                # recommended_tracks = merged_tracks
+            else:
+                # recommended_tracks = tracks_recommendation_1
+                pass
             
                 
         elif recc_type == 'emotion':
@@ -467,11 +516,11 @@ def get_genre_tracks(genre, num_tracks=40):
         err = {"error": str(e)}
         return [], err    
     
-    return recommended_list, None
+    return recommended_list[:num_tracks], None
 
 
 def get_emotion_tracks(emotion, genres, num_tracks=40):
-    """Function to retrieve top tracks of given emotion
+    """Function to retrieve recommended tracks of given emotion
 
     Args:
         emotion_name (string): Given emotion name
@@ -525,7 +574,7 @@ def get_emotion_tracks(emotion, genres, num_tracks=40):
     return recommended_list, None
 
 def get_tracks_by_emotion(emotion, genres, num_tracks=40):
-    """Function to retrieve top tracks of given emotion
+    """Function to retrieve recommended tracks of given emotion
 
     Args:
         emotion_name (string): Given emotion name
@@ -597,11 +646,13 @@ def get_tracks_genre(track_id):
         
         df_tracks = current_app.config['DF_TRACKS']
         track_genre = df_tracks[df_tracks['track_m_id'] == int(track_id)]['parent_genre_name'].values[0]
-        print("found genre for track_m_id {} : {} ".format(track_id, df_tracks[df_tracks['track_m_id'] == int(track_id)]))
+        # print("found genre for track_m_id {} : {} ".format(track_id, df_tracks[df_tracks['track_m_id'] == int(track_id)]))
+        if track_genre == None:
+            raise IndexError("No genre found for track_m_id {}".format(track_id))
         return track_genre
     except IndexError as e:
         print("No genre found for track_m_id {} : {}".format(track_id, e))
     except Exception as e: 
         print({"error": str(e)})
         err = {"error": str(e)}
-        return None, err
+        raise err
