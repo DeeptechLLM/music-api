@@ -515,8 +515,8 @@ def get_genre_tracks(genre, num_tracks=40):
         print({"error": str(e)})
         err = {"error": str(e)}
         return [], err    
-    
-    return recommended_list[:num_tracks], None
+    o_recommend = sorted(recommended_list, key=lambda item: item["score"], reverse=True)
+    return o_recommend[:num_tracks], None
 
 
 def get_emotion_tracks(emotion, genres, num_tracks=40):
