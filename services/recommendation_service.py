@@ -4,6 +4,7 @@ from utils.simple_utils import remove_duplicate_items
 from collections import Counter
 from math import ceil
 
+
 def get_recommendation_svc(tracks, emotions, genres, limit, recc_type):
     """Main function to get recommendation
 
@@ -21,7 +22,7 @@ def get_recommendation_svc(tracks, emotions, genres, limit, recc_type):
     recommended_tracks = []
     msg = []
     try: 
-        if recc_type == 'home':            
+        if recc_type == 'home': 
             
             # Get the genres of the tracks
             track_genres = [get_tracks_genre(track) for track in tracks if get_tracks_genre(track) != None]
@@ -45,11 +46,25 @@ def get_recommendation_svc(tracks, emotions, genres, limit, recc_type):
                     genre_percentages[genre] += 0.01
             
             sorted_genre_percentages = sorted(genre_percentages.items(), key=lambda x: x[1], reverse=True)
-            for genre, percentage in sorted_genre_percentages:                
-                genre_percentage = int(ceil(percentage * 100) * (limit/100))
-                print("percentage of {}: {}".format(limit, genre_percentage))
-                tracks_recommendation, err = get_genre_tracks(genre, genre_percentage)    
-                recommended_tracks = recommended_tracks + tracks_recommendation     
+            # track based recommendation
+            for genre, percentage in sorted_genre_percentages: 
+                        try: 
+                        
+                            track_genre = current_app.config['GENRE_MAP_WITH_MMUSIC'][genre]
+                            genre_tracks, err = get_tracks_with_genre_recommendation(tracks, track_genre)
+                            if err:
+                                msg.append(err)
+                            recommended_tracks = recommended_tracks + genre_tracks
+                        except KeyError:
+                            print("Genre not found: ", genre)
+                            msg.append("Genre not found: {}".format(genre))
+                            
+            # genre based recommendation
+            # for genre, percentage in sorted_genre_percentages:                
+            #     genre_percentage = int(ceil(percentage * 100) * (limit/100))
+            #     print("percentage of {}: {}".format(limit, genre_percentage))
+            #     tracks_recommendation, err = get_genre_tracks(genre, genre_percentage)    
+            #     recommended_tracks = recommended_tracks + tracks_recommendation     
                 
             c_recommend = remove_duplicate_items(recommended_tracks, "track_id")        
             o_recommend = sorted(c_recommend, key=lambda item: item["score"], reverse=True)
@@ -80,7 +95,6 @@ def get_recommendation_svc(tracks, emotions, genres, limit, recc_type):
             else:
                 # recommended_tracks = tracks_recommendation_1
                 pass
-            
                 
         elif recc_type == 'emotion':
            
@@ -139,7 +153,7 @@ def get_recommendation_svc(tracks, emotions, genres, limit, recc_type):
                     recommended_tracks = recommended_tracks + tracks_recommendation
             else:
                 if genres:
-                    for genre in genres:                     
+                    for genre in genres: 
                         try: 
                             track_genre = current_app.config['GENRE_MAP_WITH_MMUSIC'].get(genre)                        
                             genre_tracks, err = get_genre_tracks(track_genre, 200)
@@ -277,7 +291,6 @@ def get_recommendation_base_model(track_m_id, num_recommendations=10):
         # for i, score in sorted_similar_tracks:
             
         #     print("{} - {}: {}".format(i, df_tracks.loc[i, 'artist_name'], df_tracks.loc[i, 'track_name']))
-
                 
         for i, score in sorted_similar_tracks: 
             try:
@@ -322,6 +335,7 @@ def get_recommendation_base_model(track_m_id, num_recommendations=10):
         pass
     
     return recommendations, err
+
     
 def get_recommendation_custom_model_01(track_m_id, num_recommendations=20):
     """Function to get recommendation for single track only for zohioliin model
@@ -422,8 +436,6 @@ def get_recommendation_custom_model_02(track_m_id, num_recommendations=20):
         # for i, score in sorted_similar_tracks:
         #     print("{} - {}: {}".format(i, df_tracks_ardiin.loc[i, 'artist_name'], df_tracks_ardiin.loc[i, 'track_name']))
 
-        
-
         for i, score in sorted_similar_tracks:
             track_id = df_tracks_ardiin.loc[i, 'track_id']            
             track_name = str(df_tracks_ardiin.loc[i, 'track_name'])
@@ -479,8 +491,8 @@ def get_genre_tracks(genre, num_tracks=40):
     
     try: 
 
-        for genre_name in genres_in_genre:             
-            if genre_name == 'mongolian country' or genre_name == 'mongolian folk':                
+        for genre_name in genres_in_genre: 
+            if genre_name == 'mongolian country' or genre_name == 'mongolian folk': 
                 # Filtering out all songs in the Genre column for non-zero or specific values
                 filtered_df = genres[genres['parent_genre_name'].str.contains(genre_name)]
                 
@@ -492,7 +504,7 @@ def get_genre_tracks(genre, num_tracks=40):
                 ordered_genre_tracks = shuffled_df[['artist_name', 'parent_genre_id', 'parent_genre_name', 'track_id', 'track_m_id', 'track_name']].values.tolist()                
                 ordered_genre_tracks = [[artist_name, int(parent_genre_id), parent_genre_name, int(track_id), int(track_m_id), track_name] for artist_name, parent_genre_id, parent_genre_name, track_id, track_m_id, track_name in ordered_genre_tracks][:num_tracks]
                                             
-                for artist_name, parent_genre_id, parent_genre_name, track_id, track_m_id, track_name in ordered_genre_tracks:                    
+                for artist_name, parent_genre_id, parent_genre_name, track_id, track_m_id, track_name in ordered_genre_tracks: 
                     track_info = {                
                         "track_id": track_id,
                         "track_m_id": track_m_id,
@@ -559,7 +571,7 @@ def get_emotion_tracks(emotion, genres, num_tracks=40):
     try: 
         
         emotion_map = current_app.config['EMOTION_MAP']
-        if emotion in emotion_map:            
+        if emotion in emotion_map: 
             emotion_list = emotion_map.get(emotion)
             
             for emotion_name in emotion_list: 
@@ -594,6 +606,7 @@ def get_emotion_tracks(emotion, genres, num_tracks=40):
         err = {"error": str(e)}
         return [], err
     return recommended_list, None
+
 
 def get_tracks_by_emotion(emotion, genres, num_tracks=40):
     """Function to retrieve recommended tracks of given emotion
@@ -655,6 +668,7 @@ def get_tracks_by_emotion(emotion, genres, num_tracks=40):
         return [], err
     return recommended_list, None
 
+
 def get_tracks_genre(track_id):
     """Function to get genre of a track
 
@@ -664,7 +678,7 @@ def get_tracks_genre(track_id):
     Returns:
         string: genre name
     """
-    try:    
+    try: 
         
         df_tracks = current_app.config['DF_TRACKS']
         track_genre = df_tracks[df_tracks['track_m_id'] == int(track_id)]['parent_genre_name'].values[0]
