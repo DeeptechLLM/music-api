@@ -91,6 +91,19 @@ def get_recommendation_svc(tracks, emotions, genres, limit, recc_type):
             emotion_tracks, err = get_tracks_by_emotion(track_emotion, genres_mapped)              
             
             recommended_tracks = emotion_tracks
+            
+        elif recc_type == 'player':
+            for genre in genres: 
+                        try: 
+                        
+                            track_genre = current_app.config['GENRE_MAP_WITH_MMUSIC'][genre]
+                            genre_tracks, err = get_tracks_with_genre_recommendation(tracks, track_genre)
+                            if err:
+                                msg.append(err)
+                            recommended_tracks = recommended_tracks + genre_tracks
+                        except KeyError:
+                            print("Genre not found: ", genre)
+                            msg.append("Genre not found: {}".format(genre))
         else:
             if tracks:
                 if genres:
@@ -197,7 +210,9 @@ def get_tracks_with_genre_recommendation(tracks, genre):
     try: 
         recommended_tracks = []
         for track in tracks:
+            print("getting track recommendation: ", track)
             result_model_1, err = get_recommendation_base_model(track, 200)
+            # print("result: ", result_model_1)
                        
             filtered_genre_tracks = [track for track in result_model_1 if track['parent_genre_name'] == genre]
             recommended_tracks = recommended_tracks + filtered_genre_tracks
@@ -238,6 +253,9 @@ def get_recommendation_base_model(track_m_id, num_recommendations=10):
     Returns:
         list: recommended track list
     """
+    
+    err = []
+    recommendations = []
     try:
 
         df_tracks = current_app.config['DF_TRACKS']
@@ -253,55 +271,57 @@ def get_recommendation_base_model(track_m_id, num_recommendations=10):
         # Get the similar tracks by sorting the similarity scores
         similar_tracks = list(enumerate(similarity_scores[0]))
         sorted_similar_tracks = sorted(similar_tracks, key=lambda x: x[1], reverse=True)[1:num_recommendations + 1]
-
+        
+        # print(df_tracks.loc[5963])
         # # Print the top 10 similar tracks
         # for i, score in sorted_similar_tracks:
+            
         #     print("{} - {}: {}".format(i, df_tracks.loc[i, 'artist_name'], df_tracks.loc[i, 'track_name']))
 
-        recommendations = []
-
+                
         for i, score in sorted_similar_tracks: 
-            track_id = df_tracks.loc[i, 'track_id']
-            track_m_id = df_tracks.loc[i, 'track_m_id']
-            track_name = str(df_tracks.loc[i, 'track_name'])
-            artist_name = str(df_tracks.loc[i, 'artist_name'])
-            parent_gid = df_tracks.loc[i, 'parent_genre_id']
-            parent_name = str(df_tracks.loc[i, 'parent_genre_name'])
+            try:
+                track_id = df_tracks.loc[i, 'track_id']
+                track_m_id = df_tracks.loc[i, 'track_m_id']
+                track_name = str(df_tracks.loc[i, 'track_name'])
+                artist_name = str(df_tracks.loc[i, 'artist_name'])
+                parent_gid = df_tracks.loc[i, 'parent_genre_id']
+                parent_name = str(df_tracks.loc[i, 'parent_genre_name'])
 
-            # print("{}: {}/{} {} by {} - {}".format(i, track_id, track_m_id, track_name, artist_name, score))
+                # print("{}: {}/{} {} by {}({}/{}) - {}".format(i, track_id, track_m_id, track_name, artist_name, parent_gid, parent_name, score))
 
-            track_info = {
-                "track_id": int(track_id),
-                "track_m_id": int(track_m_id),
-                "track_name": track_name,
-                "artist_name": artist_name,
-                "parent_genre_id": int(parent_gid),
-                "parent_genre_name": parent_name,
-                "score": float(score)
-            }
-            
-            recommendations.append(track_info)
-        
-        return recommendations, None
+                track_info = {
+                    "track_id": int(track_id),
+                    "track_m_id": int(track_m_id),
+                    "track_name": track_name,
+                    "artist_name": artist_name,
+                    "parent_genre_id": int(parent_gid),
+                    "parent_genre_name": parent_name,
+                    "score": float(score)
+                }
+                
+                recommendations.append(track_info)        
+            except TypeError:
+                print("Invalid track_m_id - {}. Please ensure track_m_id can be converted to an integer.".format(track_m_id))
+                err.append("Invalid track_m_id - {}. Please ensure track_m_id can be converted to an integer.".format(track_m_id))
+                pass
+                
+            except KeyError:
+                print("Invalid key. Please ensure 'key - {} ' is a valid key in the DataFrame of model-01.".format(i))
+                # err.append("Invalid key. Please ensure 'key - {}' is a valid key in the DataFrame of model-01.".format(i))
+                pass
+                
+            except IndexError:
+                print("No matching track found. Please ensure the track_m_id - {} exists in the DataFrame of model-01.".format(track_m_id))
+                err.append("No matching track found. Please ensure the track_m_id - {} exists in the DataFrame of model-01.".format(track_m_id))
+                pass
     
-    except TypeError:
-        print("Invalid track_m_id - {}. Please ensure track_m_id can be converted to an integer.".format(track_m_id))
-        err = "Invalid track_m_id - {}. Please ensure track_m_id can be converted to an integer.".format(track_m_id)
-        return [], err
-    except KeyError:
-        print("Invalid key. Please ensure 'track_m_id - {}' is a valid key in the DataFrame of model-01.".format(track_m_id))
-        err = "Invalid key. Please ensure 'track_m_id - {}' is a valid key in the DataFrame of model-01.".format(track_m_id)
-        return [], err
-    except IndexError:
-        print("No matching track found. Please ensure the track_m_id - {} exists in the DataFrame of model-01.".format(track_m_id))
-        err = "No matching track found. Please ensure the track_m_id - {} exists in the DataFrame of model-01.".format(track_m_id)
-        return [], err
-
     except Exception as e: 
         print({"error": str(e)})
-        err = {"error": str(e)}
-        return [], err
-
+        err.append({"error": str(e)})
+        pass
+    
+    return recommendations, err
     
 def get_recommendation_custom_model_01(track_m_id, num_recommendations=20):
     """Function to get recommendation for single track only for zohioliin model
@@ -382,6 +402,8 @@ def get_recommendation_custom_model_02(track_m_id, num_recommendations=20):
     Returns:
         list: recommended track list
     """
+    
+    recommendations = []
     try: 
         df_tracks_ardiin = current_app.config['DF_TRACKS_ARDIIN']
         model_ardiin = current_app.config['MODEL_ARDIIN']        
@@ -400,7 +422,7 @@ def get_recommendation_custom_model_02(track_m_id, num_recommendations=20):
         # for i, score in sorted_similar_tracks:
         #     print("{} - {}: {}".format(i, df_tracks_ardiin.loc[i, 'artist_name'], df_tracks_ardiin.loc[i, 'track_name']))
 
-        recommendations = []
+        
 
         for i, score in sorted_similar_tracks:
             track_id = df_tracks_ardiin.loc[i, 'track_id']            
