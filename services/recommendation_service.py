@@ -26,10 +26,10 @@ def get_recommendation_svc(tracks, emotions, genres, limit, recc_type):
             
             # Get the genres of the tracks
             track_genres = [get_tracks_genre(track) for track in tracks if get_tracks_genre(track) != None]
-            genres_mapped = [current_app.config['GENRE_MAP_WITH_MMUSIC'][genre] for genre in genres]
-            genres_mapped.extend(genres_mapped)
+            # genres_mapped = [current_app.config['GENRE_MAP_WITH_MMUSIC'][genre] for genre in genres]
+            # genres_mapped.extend(genres_mapped)
             
-            track_genres = track_genres + genres_mapped
+            track_genres = track_genres + genres
             
             # Count the occurence of each genre
             genre_counts = Counter(track_genres)
@@ -48,10 +48,9 @@ def get_recommendation_svc(tracks, emotions, genres, limit, recc_type):
             sorted_genre_percentages = sorted(genre_percentages.items(), key=lambda x: x[1], reverse=True)
             # track based recommendation
             for genre, percentage in sorted_genre_percentages: 
-                        try: 
-                        
-                            track_genre = current_app.config['GENRE_MAP_WITH_MMUSIC'][genre]
-                            genre_tracks, err = get_tracks_with_genre_recommendation(tracks, track_genre)
+                        try:                             
+                            # track_genre = current_app.config['GENRE_MAP_WITH_MMUSIC'][genre]
+                            genre_tracks, err = get_tracks_with_genre_recommendation(tracks, genre)
                             if err:
                                 msg.append(err)
                             recommended_tracks = recommended_tracks + genre_tracks
@@ -224,14 +223,14 @@ def get_tracks_with_genre_recommendation(tracks, genre):
     try: 
         recommended_tracks = []
         for track in tracks:
-            print("getting track recommendation: ", track)
+            # print("getting track recommendation: ", track)
             result_model_1, err = get_recommendation_base_model(track, 200)
             # print("result: ", result_model_1)
                        
             filtered_genre_tracks = [track for track in result_model_1 if track['parent_genre_name'] == genre]
             recommended_tracks = recommended_tracks + filtered_genre_tracks
-        
-        return recommended_tracks, err
+        o_recommend = sorted(recommended_tracks, key=lambda item: item["score"], reverse=True)
+        return o_recommend, err
     except Exception as e: 
         raise Exception(str(e))
 
