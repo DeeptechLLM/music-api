@@ -50,9 +50,9 @@ def get_recommendation_svc(tracks, emotions, genres, limit, recc_type):
             tracks_recommendation, err = get_tracks_with_genre_recommendation(tracks)
             for genre, percentage in sorted_genre_percentages: 
                         try:                             
-                            # track_genre = current_app.config['GENRE_MAP_WITH_MMUSIC'][genre]
+                            track_genre = current_app.config['GENRE_MAP_WITH_MMUSIC'][genre]
                             # genre_tracks, err = get_tracks_with_genre_recommendation(tracks, genre)
-                            filtered_genre_tracks = [track for track in tracks_recommendation if track['parent_genre_name'] == genre] 
+                            filtered_genre_tracks = [track for track in tracks_recommendation if track['parent_genre_name'] == track_genre] 
                             if err:
                                 msg.append(err)
                             recommended_tracks = recommended_tracks + filtered_genre_tracks
@@ -197,8 +197,7 @@ def get_tracks_with_genre_recommendation(tracks):
     """Function to get recommendation for track list
 
     Args:
-        tracks (list): list of track_id  
-        genre (string): genre name      
+        tracks (list): list of track_id          
 
     Returns:
         list: recommended track list
@@ -206,12 +205,8 @@ def get_tracks_with_genre_recommendation(tracks):
     
     try: 
         recommended_tracks = []
-        for track in tracks:
-            print("getting track recommendation: ", track)
-            result_model_1, err = get_recommendation_base_model(track, 200)
-            # print("result: ", result_model_1)
-                       
-            # filtered_genre_tracks = [track for track in result_model_1 if track['parent_genre_name'] == genre]
+        for track in tracks:            
+            result_model_1, err = get_recommendation_base_model(track, 200)            
             recommended_tracks = recommended_tracks + result_model_1
         o_recommend = sorted(recommended_tracks, key=lambda item: item["score"], reverse=True)
         return o_recommend, err
