@@ -263,38 +263,14 @@ def get_recommendation_base_model(track_m_id, num_recommendations=10):
 
         # Get the similar tracks by sorting the similarity scores
         similar_tracks = list(enumerate(similarity_scores[0]))        
-        sorted_similar_tracks = sorted(similar_tracks, key=lambda x: x[1], reverse=True)[1:num_recommendations + 1]
+        sorted_similar_tracks = sorted(similar_tracks, key=lambda x: x[1], reverse=True)[1:num_recommendations + 1]        
         
-        # df_tracks.to_csv("logs/tracks_full.csv", index=True)        
-        # similarity_scores.to_csv("logs/similarity_scores.csv", index=True)
-        # with open("logs/similarity_scores.csv", "a", encoding="utf-8") as log:
-        #     log.write(str(similarity_scores) + '\n')     
-        # with open("logs/sorted.csv", "a", encoding="utf-8") as log:
-        #     log.write(str(sorted_similar_tracks) + '\n')
-            
-        # with open("logs/tracks.csv", "a", encoding="utf-8") as log:
-        #     log.write(str(similar_tracks) + '\n')
-        # print("track full: ", df_tracks.loc[int(12192)])
-        # log.write(sorted_similar_tracks)
         # # Print the top 10 similar tracks
-        # for i, score in sorted_similar_tracks:
-            
+        # for i, score in sorted_similar_tracks:            
         #     print("{} - {}: {}".format(i, df_tracks.loc[i, 'artist_name'], df_tracks.loc[i, 'track_name']))
         
         for i, score in sorted_similar_tracks: 
-            try:
-                
-                # if (i == 0 or i == 10541):       
-                #     print("i : ", i, score)         
-                # print("getting track info: {}, {} - {}".format(i, score, df_tracks.iloc[i]))
-                # track_info = df_tracks.iloc[i]
-                # print("track info: ", track_info, track_info["track_id"])
-                # track_id = track_info['track_id']
-                # track_m_id = track_info['track_m_id']
-                # track_name = str(track_info['track_name'])
-                # artist_name = str(track_info['artist_name'])
-                # parent_gid = track_info['parent_genre_id']
-                # parent_name = str(track_info['parent_genre_name'])
+            try:                
                 
                 track_id = df_tracks.loc[int(i), 'track_id']
                 track_m_id = df_tracks.loc[i, 'track_m_id']
