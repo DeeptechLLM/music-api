@@ -47,17 +47,19 @@ def get_recommendation_svc(tracks, emotions, genres, limit, recc_type):
             
             sorted_genre_percentages = sorted(genre_percentages.items(), key=lambda x: x[1], reverse=True)
             # track based recommendation
+            tracks_recommendation, err = get_tracks_with_genre_recommendation(tracks)
             for genre, percentage in sorted_genre_percentages: 
                         try:                             
                             # track_genre = current_app.config['GENRE_MAP_WITH_MMUSIC'][genre]
-                            genre_tracks, err = get_tracks_with_genre_recommendation(tracks, genre)
+                            # genre_tracks, err = get_tracks_with_genre_recommendation(tracks, genre)
+                            filtered_genre_tracks = [track for track in tracks_recommendation if track['parent_genre_name'] == genre] 
                             if err:
                                 msg.append(err)
-                            recommended_tracks = recommended_tracks + genre_tracks
+                            recommended_tracks = recommended_tracks + filtered_genre_tracks
                         except KeyError:
                             print("Genre not found: ", genre)
                             msg.append("Genre not found: {}".format(genre))
-                            
+            recommended_tracks = [track for track in recommended_tracks if track['track_m_id'] not in tracks]                
             # genre based recommendation
             # for genre, percentage in sorted_genre_percentages:                
             #     genre_percentage = int(ceil(percentage * 100) * (limit/100))
@@ -69,31 +71,7 @@ def get_recommendation_svc(tracks, emotions, genres, limit, recc_type):
             o_recommend = sorted(c_recommend, key=lambda item: item["score"], reverse=True)
             recommended_tracks = [{k: v for k, v in item.items() if k != "parent_genre_id" and k != "parent_genre_name"} for item in o_recommend]
             # recommended_tracks = [{k: v for k, v in item.items() if k != "score"} for item in o_recommend]
-            return recommended_tracks, msg   
-        
-            track_first_genre = max(set(track_genres), key=track_genres.count)                        
-            tracks_recommendation_1, err = get_genre_tracks(track_first_genre, 200)            
-            # recommended_tracks = recommended_tracks + tracks_recommendation_1
-            
-            if len(track_genres) > 1:
-                track_second_genre = sorted(set(track_genres), key=track_genres.count)[-2]                        
-                tracks_recommendation_2, err = get_genre_tracks(track_second_genre, 200)
-                # recommended_tracks = recommended_tracks + tracks_recommendation_2
-                num_tracks_1 = int(genre_counts[track_first_genre] * genre_percentages.get(track_first_genre))
-                # num_tracks_1 = int(len(tracks_recommendation_1) * genre_percentages.get(track_first_genre))
-                num_tracks_2 = int(genre_counts[track_second_genre] * genre_percentages.get(track_second_genre))
-                # num_tracks_2 = int(len(tracks_recommendation_2) * genre_percentages.get(track_second_genre))
-                
-                selected_tracks_1 = tracks_recommendation_1[:genre_counts[track_first_genre]]
-                selected_tracks_2 = tracks_recommendation_2[:genre_counts[track_second_genre]]
-               
-                merged_tracks = selected_tracks_1 + selected_tracks_2
-                print("most common genre: ", track_first_genre, genre_counts[track_first_genre])
-                print("second most common genre: ", track_second_genre, genre_counts[track_second_genre])
-                # recommended_tracks = merged_tracks
-            else:
-                # recommended_tracks = tracks_recommendation_1
-                pass
+            return recommended_tracks, msg
                 
         elif recc_type == 'emotion':
            
@@ -105,32 +83,36 @@ def get_recommendation_svc(tracks, emotions, genres, limit, recc_type):
             
             recommended_tracks = emotion_tracks
             
-        elif recc_type == 'player':
+        elif recc_type == 'player':            
+            tracks_recommendation, err = get_tracks_with_genre_recommendation(tracks)
+            
             for genre in genres: 
-                        try: 
-                        
-                            track_genre = current_app.config['GENRE_MAP_WITH_MMUSIC'][genre]
-                            genre_tracks, err = get_tracks_with_genre_recommendation(tracks, track_genre)
+                        try:                                             
+                            track_genre = current_app.config['GENRE_MAP_WITH_MMUSIC'][genre]                            
+                            filtered_genre_tracks = [track for track in tracks_recommendation if track['parent_genre_name'] == track_genre]                            
                             if err:
                                 msg.append(err)
-                            recommended_tracks = recommended_tracks + genre_tracks
+                            recommended_tracks = recommended_tracks + filtered_genre_tracks
                         except KeyError:
                             print("Genre not found: ", genre)
                             msg.append("Genre not found: {}".format(genre))
+            recommended_tracks = [track for track in recommended_tracks if track['track_m_id'] not in tracks]
         else:
             if tracks:
+                tracks_recommendation, err = get_tracks_with_genre_recommendation(tracks)
                 if genres:
                     for genre in genres: 
-                        try: 
-                        
+                        try:                         
                             track_genre = current_app.config['GENRE_MAP_WITH_MMUSIC'][genre]
-                            genre_tracks, err = get_tracks_with_genre_recommendation(tracks, track_genre)
+                            filtered_genre_tracks = [track for track in tracks_recommendation if track['parent_genre_name'] == track_genre]   
+                            # genre_tracks, err = get_tracks_with_genre_recommendation(tracks, track_genre)
                             if err:
                                 msg.append(err)
-                            recommended_tracks = recommended_tracks + genre_tracks
+                            recommended_tracks = recommended_tracks + filtered_genre_tracks
                         except KeyError:
                             print("Genre not found: ", genre)
                             msg.append("Genre not found: {}".format(genre))
+                
 
                 if emotions:
                     for emotion in emotions:
@@ -150,6 +132,8 @@ def get_recommendation_svc(tracks, emotions, genres, limit, recc_type):
                     if err:
                         msg.append(err)
                     recommended_tracks = recommended_tracks + tracks_recommendation
+                    
+                recommended_tracks = [track for track in recommended_tracks if track['track_m_id'] not in tracks]
             else:
                 if genres:
                     for genre in genres: 
@@ -209,7 +193,7 @@ def get_tracks_recommendation(tracks):
         raise Exception(str(e))
 
     
-def get_tracks_with_genre_recommendation(tracks, genre):
+def get_tracks_with_genre_recommendation(tracks):
     """Function to get recommendation for track list
 
     Args:
@@ -227,8 +211,8 @@ def get_tracks_with_genre_recommendation(tracks, genre):
             result_model_1, err = get_recommendation_base_model(track, 200)
             # print("result: ", result_model_1)
                        
-            filtered_genre_tracks = [track for track in result_model_1 if track['parent_genre_name'] == genre]
-            recommended_tracks = recommended_tracks + filtered_genre_tracks
+            # filtered_genre_tracks = [track for track in result_model_1 if track['parent_genre_name'] == genre]
+            recommended_tracks = recommended_tracks + result_model_1
         o_recommend = sorted(recommended_tracks, key=lambda item: item["score"], reverse=True)
         return o_recommend, err
     except Exception as e: 
@@ -286,16 +270,16 @@ def get_recommendation_base_model(track_m_id, num_recommendations=10):
         similar_tracks = list(enumerate(similarity_scores[0]))        
         sorted_similar_tracks = sorted(similar_tracks, key=lambda x: x[1], reverse=True)[1:num_recommendations + 1]
         
-        df_tracks.to_csv("logs/tracks_full.csv", index=True)        
-        similarity_scores.to_csv("logs/similarity_scores.csv", index=True)
+        # df_tracks.to_csv("logs/tracks_full.csv", index=True)        
+        # similarity_scores.to_csv("logs/similarity_scores.csv", index=True)
         # with open("logs/similarity_scores.csv", "a", encoding="utf-8") as log:
         #     log.write(str(similarity_scores) + '\n')     
-        with open("logs/sorted.csv", "a", encoding="utf-8") as log:
-            log.write(str(sorted_similar_tracks) + '\n')
+        # with open("logs/sorted.csv", "a", encoding="utf-8") as log:
+        #     log.write(str(sorted_similar_tracks) + '\n')
             
-        with open("logs/tracks.csv", "a", encoding="utf-8") as log:
-            log.write(str(similar_tracks) + '\n')
-        print("track full: ", df_tracks.loc[int(12192)])
+        # with open("logs/tracks.csv", "a", encoding="utf-8") as log:
+        #     log.write(str(similar_tracks) + '\n')
+        # print("track full: ", df_tracks.loc[int(12192)])
         # log.write(sorted_similar_tracks)
         # # Print the top 10 similar tracks
         # for i, score in sorted_similar_tracks:
@@ -305,8 +289,8 @@ def get_recommendation_base_model(track_m_id, num_recommendations=10):
         for i, score in sorted_similar_tracks: 
             try:
                 
-                if (i == 0 or i == 10541):       
-                    print("i : ", i, score)         
+                # if (i == 0 or i == 10541):       
+                #     print("i : ", i, score)         
                 # print("getting track info: {}, {} - {}".format(i, score, df_tracks.iloc[i]))
                 # track_info = df_tracks.iloc[i]
                 # print("track info: ", track_info, track_info["track_id"])
