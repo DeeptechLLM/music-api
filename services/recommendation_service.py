@@ -97,6 +97,14 @@ def get_recommendation_svc(tracks, emotions, genres, limit, recc_type):
                             print("Genre not found: ", genre)
                             msg.append("Genre not found: {}".format(genre))
             recommended_tracks = [track for track in recommended_tracks if track['track_m_id'] not in tracks]
+        elif recc_type == 'search': 
+            tracks_recommendation, err = get_recommendation_base_model(tracks[0])
+            if genres:
+                filtered_genre_tracks = [track for track in tracks_recommendation if track['m_genre'] == genres[0]] 
+                recommended_tracks = recommended_tracks + filtered_genre_tracks
+            else:
+                recommended_tracks = recommended_tracks + tracks_recommendation
+            
         else:
             if tracks:
                 tracks_recommendation, err = get_tracks_with_genre_recommendation(tracks)
