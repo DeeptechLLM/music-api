@@ -73,11 +73,11 @@ def get_recommendation_svc(tracks, emotions, genres, limit, recc_type):
             #     tracks_recommendation, err = get_genre_tracks(genre, genre_percentage)    
             #     recommended_tracks = recommended_tracks + tracks_recommendation     
                 
-            c_recommend = remove_duplicate_items(recommended_tracks, "track_id")        
-            o_recommend = sorted(c_recommend, key=lambda item: item["score"], reverse=True)
-            recommended_tracks = [{k: v for k, v in item.items() if k != "m_genre_id" and k != "m_genre"} for item in o_recommend]
-            # recommended_tracks = [{k: v for k, v in item.items() if k != "score"} for item in o_recommend]
-            return recommended_tracks, msg
+            # c_recommend = remove_duplicate_items(recommended_tracks, "track_id")        
+            # o_recommend = sorted(c_recommend, key=lambda item: item["score"], reverse=True)
+            # recommended_tracks = [{k: v for k, v in item.items() if k != "m_genre_id" and k != "m_genre"} for item in o_recommend]
+            # # recommended_tracks = [{k: v for k, v in item.items() if k != "score"} for item in o_recommend]
+            # return recommended_tracks, msg
                 
         elif recc_type == 'emotion':
            
