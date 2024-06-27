@@ -47,18 +47,24 @@ def get_recommendation_svc(tracks, emotions, genres, limit, recc_type):
             
             sorted_genre_percentages = sorted(genre_percentages.items(), key=lambda x: x[1], reverse=True)
             # track based recommendation
-            tracks_recommendation, err = get_tracks_with_genre_recommendation(tracks)
-            for genre, percentage in sorted_genre_percentages: 
-                        try:                             
-                            # track_genre = current_app.config['GENRE_MAP_WITH_MMUSIC'][genre]
-                            # genre_tracks, err = get_tracks_with_genre_recommendation(tracks, genre)
-                            filtered_genre_tracks = [track for track in tracks_recommendation if track['m_genre'] == genre] 
-                            if err:
-                                msg.append(err)
-                            recommended_tracks = recommended_tracks + filtered_genre_tracks
-                        except KeyError:
-                            print("Genre not found: ", genre)
-                            msg.append("Genre not found: {}".format(genre))
+            
+            for track in tracks:
+            
+                for genre, percentage in sorted_genre_percentages: 
+                    try:                             
+                        tracks_recommendation, err = get_track_with_genre_recommendation(track, genre)
+                                
+                        if err:
+                            msg.append(err)
+                        recommended_tracks = recommended_tracks + tracks_recommendation
+                    except KeyError:
+                        print("Genre not found: ", genre)
+                        msg.append("Genre not found: {}".format(genre))
+                if len(recommended_tracks) >= limit:
+                    break
+            if len(tracks_recommendation) == 0:
+                return [], err
+            
             recommended_tracks = [track for track in recommended_tracks if track['track_m_id'] not in tracks]                
             # genre based recommendation
             # for genre, percentage in sorted_genre_percentages:                
@@ -204,6 +210,24 @@ def get_tracks_recommendation(tracks):
     except Exception as e: 
         raise Exception(str(e))
 
+def get_track_with_genre_recommendation(track, genre):
+    """Function to get recommendation for track list
+
+    Args:
+        tracks (list): list of track_id          
+
+    Returns:
+        list: recommended track list
+    """
+    
+    try: 
+        recommended_tracks = []
+        recommended_tracks, err = get_recommendation_base_model(track, 200)                 
+        filtered_genre_tracks = [track for track in recommended_tracks if track["m_genre"] == genre]
+        o_recommend = sorted(filtered_genre_tracks, key=lambda item: item["score"], reverse=True)
+        return o_recommend, err
+    except Exception as e: 
+        raise Exception(str(e))
     
 def get_tracks_with_genre_recommendation(tracks):
     """Function to get recommendation for track list
