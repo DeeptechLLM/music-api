@@ -91,17 +91,17 @@ def get_recommendation_svc(tracks, emotions, genres, limit, recc_type):
             
         elif recc_type == 'player':            
             tracks_recommendation, err = get_tracks_with_genre_recommendation(tracks)
-            
+                         
             for genre in genres: 
-                        try:                                             
-                            # track_genre = current_app.config['GENRE_MAP_WITH_MMUSIC'][genre]                            
-                            filtered_genre_tracks = [track for track in tracks_recommendation if track['m_genre'] == genre]                            
-                            if err:
-                                msg.append(err)
-                            recommended_tracks = recommended_tracks + filtered_genre_tracks
-                        except KeyError:
-                            print("Genre not found: ", genre)
-                            msg.append("Genre not found: {}".format(genre))
+                try:                       
+                    filtered_genre_tracks = [track for track in tracks_recommendation if track['m_genre'] == genre]                    
+                    
+                    if err:
+                        msg.append(err)
+                    recommended_tracks = recommended_tracks + filtered_genre_tracks
+                except KeyError:
+                    print("Genre not found: ", genre)
+                    msg.append("Genre not found: {}".format(genre))
             recommended_tracks = [track for track in recommended_tracks if track['track_m_id'] not in tracks]
         elif recc_type == 'search': 
             tracks_recommendation, err = get_recommendation_base_model(tracks[0], 200)
@@ -242,7 +242,7 @@ def get_tracks_with_genre_recommendation(tracks):
     try: 
         recommended_tracks = []
         for track in tracks:            
-            result_model_1, err = get_recommendation_base_model(track, 200)                 
+            result_model_1, err = get_recommendation_base_model(track, 200)                            
             recommended_tracks = recommended_tracks + result_model_1
         o_recommend = sorted(recommended_tracks, key=lambda item: item["score"], reverse=True)
         return o_recommend, err
