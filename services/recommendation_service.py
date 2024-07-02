@@ -82,10 +82,10 @@ def get_recommendation_svc(tracks, emotions, genres, limit, recc_type):
         elif recc_type == 'emotion':
            
             emotion = emotions[0]
-            track_emotion = current_app.config['EMOTION_MAP_WITH_MMUSIC'][emotion]
+            # track_emotion = current_app.config['EMOTION_MAP_WITH_MMUSIC'][emotion]
             
             # genres_mapped = [current_app.config['GENRE_MAP_WITH_MMUSIC'][genre] for genre in genres]
-            emotion_tracks, err = get_tracks_by_emotion(track_emotion, genres)              
+            emotion_tracks, err = get_tracks_by_emotion(emotion, genres, 200)              
             
             recommended_tracks = emotion_tracks
             
@@ -651,7 +651,7 @@ def get_tracks_by_emotion(emotion, genres, num_tracks=40):
         #     for emotion_name in emotion_list: 
         
         # Filtering out all songs in the Emotion column for non-zero or specific values
-        filtered_emotions = emotion_model[emotion_model['child'] == int(emotion)]        
+        filtered_emotions = emotion_model[emotion_model['cluster'] == emotion]        
                 
         # Shuffling the songs of the emotion
         shuffled_emotions = filtered_emotions.sample(frac=1).reset_index(drop=True)
@@ -663,8 +663,8 @@ def get_tracks_by_emotion(emotion, genres, num_tracks=40):
             
         # Retrieving <num_tracks> tracks from sorted list
         ordered_emotion_tracks = selected_list[['artist_name', 'm_genre_id', 'm_genre', 'track_id', 'track_m_id', 'track_name']].values.tolist()
-        ordered_emotion_tracks = [[artist_name, int(m_genre_id), m_genre, int(track_id), int(track_m_id), track_name] for artist_name, m_genre_id, m_genre, track_id, track_m_id, track_name in ordered_emotion_tracks][:num_tracks]
-
+        ordered_emotion_tracks = [[artist_name, int(m_genre_id), m_genre, int(track_id), int(track_m_id), track_name] for artist_name, m_genre_id, m_genre, track_id, track_m_id, track_name in ordered_emotion_tracks]
+        
         # print("Top {} {} songs:".format(num_tracks, emotion_name))
         for artist_name, m_genre_id, m_genre, track_id, track_m_id, track_name in ordered_emotion_tracks:
             track_info = {                
