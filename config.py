@@ -2,10 +2,10 @@ import joblib
 
 class ProdConfig():
     # load model with configs 
-    track_file = 'data/v2/dat_tracks_without_karaoke.jlb'
-    genre_file = 'data/v2/dat_genres7_without_karaoke.jlb'
-    emotion_file = 'data/v2/dat_emotions3_without_karaoke.jlb'
-    model_file = 'data/v2/mod_tracks_without_karaoke.jlb'   
+    track_file = 'data/v2/dat_tracks.jlb'
+    genre_file = 'data/v2/dat_genres.jlb'
+    emotion_file = 'data/v2/dat_emotions.jlb'
+    model_file = 'data/v2/mod_tracks.jlb'   
     
     # Only tracks and model for Zohioliin genre
     track_zohioliin = 'data/dat_tracks_zohioliin_without_karaoke.jlb'
