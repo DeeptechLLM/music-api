@@ -67,20 +67,7 @@ def get_recommendation_svc(tracks, emotions, genres, limit, recc_type):
             if len(recommended_tracks) == 0:
                 return [], err
             
-            recommended_tracks = [track for track in recommended_tracks if track['track_m_id'] not in tracks]   
-                           
-            # genre based recommendation
-            # for genre, percentage in sorted_genre_percentages:                
-            #     genre_percentage = int(ceil(percentage * 100) * (limit/100))
-            #     print("percentage of {}: {}".format(limit, genre_percentage))
-            #     tracks_recommendation, err = get_genre_tracks(genre, genre_percentage)    
-            #     recommended_tracks = recommended_tracks + tracks_recommendation     
-                
-            # c_recommend = remove_duplicate_items(recommended_tracks, "track_id")        
-            # o_recommend = sorted(c_recommend, key=lambda item: item["score"], reverse=True)
-            # recommended_tracks = [{k: v for k, v in item.items() if k != "m_genre_id" and k != "m_genre"} for item in o_recommend]
-            # # recommended_tracks = [{k: v for k, v in item.items() if k != "score"} for item in o_recommend]
-            # return recommended_tracks, msg
+            recommended_tracks = [track for track in recommended_tracks if track['track_m_id'] not in tracks]
                 
         elif recc_type == 'emotion':
            
@@ -88,9 +75,12 @@ def get_recommendation_svc(tracks, emotions, genres, limit, recc_type):
             # track_emotion = current_app.config['EMOTION_MAP_WITH_MMUSIC'][emotion]
             
             # genres_mapped = [current_app.config['GENRE_MAP_WITH_MMUSIC'][genre] for genre in genres]
-            emotion_tracks, err = get_tracks_by_emotion(emotion, genres, 200)              
+            emotion_tracks, other_tracks, err = get_tracks_by_emotion(emotion, genres, 500)              
+            
             
             recommended_tracks = emotion_tracks
+            if len(emotion_tracks) < limit:
+                recommended_tracks = recommended_tracks + other_tracks
             
         elif recc_type == 'player':            
             tracks_recommendation, err = get_tracks_with_genre_recommendation(tracks)
@@ -642,7 +632,7 @@ def get_tracks_by_emotion(emotion, genres, num_tracks=40):
     """
     recommended_list = []
     emotion_tracks = []
-    
+    other_tracks = []
     emotion_model = current_app.config['DF_EMOTIONS']    
     
     try: 
@@ -682,13 +672,15 @@ def get_tracks_by_emotion(emotion, genres, num_tracks=40):
             
             if m_genre in genres:
                 emotion_tracks.append(track_info)
+            else:
+                other_tracks.append(track_info)
         recommended_list = recommended_list + emotion_tracks
 
     except Exception as e: 
         print({"error": str(e)})
         err = {"error": str(e)}
         return [], err
-    return recommended_list, None
+    return recommended_list, other_tracks, None
 
 
 def get_tracks_genre(track_id):
@@ -702,8 +694,7 @@ def get_tracks_genre(track_id):
     """
     try: 
         
-        df_tracks = current_app.config['DF_TRACKS']
-        print("track info: ", df_tracks[df_tracks['track_m_id'] == int(track_id)])
+        df_tracks = current_app.config['DF_TRACKS']        
         track_genre = df_tracks[df_tracks['track_m_id'] == int(track_id)]['m_genre'].values[0]
         # print("found genre for track_m_id {} : {} ".format(track_id, df_tracks[df_tracks['track_m_id'] == int(track_id)]))
         if track_genre == None:
