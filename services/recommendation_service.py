@@ -53,19 +53,22 @@ def get_recommendation_svc(tracks, emotions, genres, limit, recc_type):
                 for genre, percentage in sorted_genre_percentages: 
                     try:                             
                         tracks_recommendation, err = get_track_with_genre_recommendation(track, genre)
-                                
+                            
                         if err:
-                            msg.append(err)
+                            print("err: ", err)
+                            msg.append(err)                        
                         recommended_tracks = recommended_tracks + tracks_recommendation
                     except KeyError:
                         print("Genre not found: ", genre)
-                        msg.append("Genre not found: {}".format(genre))
+                        msg.append("Genre not found: {}".format(genre))                 
                 if len(recommended_tracks) >= limit:
                     break
-            if len(tracks_recommendation) == 0:
+            
+            if len(recommended_tracks) == 0:
                 return [], err
             
-            recommended_tracks = [track for track in recommended_tracks if track['track_m_id'] not in tracks]                
+            recommended_tracks = [track for track in recommended_tracks if track['track_m_id'] not in tracks]   
+                           
             # genre based recommendation
             # for genre, percentage in sorted_genre_percentages:                
             #     genre_percentage = int(ceil(percentage * 100) * (limit/100))
@@ -700,6 +703,7 @@ def get_tracks_genre(track_id):
     try: 
         
         df_tracks = current_app.config['DF_TRACKS']
+        print("track info: ", df_tracks[df_tracks['track_m_id'] == int(track_id)])
         track_genre = df_tracks[df_tracks['track_m_id'] == int(track_id)]['m_genre'].values[0]
         # print("found genre for track_m_id {} : {} ".format(track_id, df_tracks[df_tracks['track_m_id'] == int(track_id)]))
         if track_genre == None:
