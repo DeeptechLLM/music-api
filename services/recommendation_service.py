@@ -22,6 +22,10 @@ def get_recommendation_svc(tracks, emotions, genres, limit, recc_type):
     recommended_tracks = []
     msg = []
     try: 
+        unpublished_list = current_app.config['UNPUBLISHED_LIST']
+        # Convert str to integer in list
+        unpublished_list = [eval(track) for track in unpublished_list]        
+
         if recc_type == 'home': 
             
             # Get the genres of the tracks
@@ -171,7 +175,7 @@ def get_recommendation_svc(tracks, emotions, genres, limit, recc_type):
                         # emotions_recommendation = get_tracks_recommendation(emotion_tracks, 2)                
                         
                             recommended_tracks = recommended_tracks + emotion_tracks             
-       
+        recommended_tracks = [track for track in recommended_tracks if track['track_m_id'] not in unpublished_list]
         c_recommend = remove_duplicate_items(recommended_tracks, "track_id")        
         o_recommend = sorted(c_recommend, key=lambda item: item["score"], reverse=True)
         recommended_tracks = [{k: v for k, v in item.items() if k != "m_genre_id" and k != "m_genre_id"} for item in o_recommend]

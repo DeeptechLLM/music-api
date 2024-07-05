@@ -21,7 +21,7 @@ Project execution
 
 ### Execute project
 ```
-nohup gunicorn -b localhost:5002 app:app > music.log &
+nohup gunicorn -w 9 -b localhost:5002 app:app > music.log &
 ```
 
 ### Sample Request

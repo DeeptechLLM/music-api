@@ -1,6 +1,9 @@
 import joblib
 
 class ProdConfig():
+    # load unpublished list
+    unpublished_file = open('data/v2/unpublished_list.txt', 'r+')    
+    
     # load model with configs 
     track_file = 'data/v2/dat_tracks.jlb'
     genre_file = 'data/v2/dat_genres.jlb'
@@ -14,6 +17,8 @@ class ProdConfig():
     # Only tracks and model for Ardiin genre
     track_ardiin = 'data/dat_tracks_ardiin_without_karaoke.jlb'
     model_ardiin = 'data/mod_tracks_ardiin_without_karaoke.jlb'
+    
+    UNPUBLISHED_LIST = unpublished_file.readlines()
         
     DF_TRACKS = joblib.load(track_file)    
     DF_GENRES = joblib.load(genre_file)
@@ -30,6 +35,8 @@ class ProdConfig():
     MODEL = joblib.load(model_file)
     MODEL_ZOHIOLIIN = joblib.load(model_zohioliin)
     MODEL_ARDIIN = joblib.load(model_ardiin)
+    
+    
     
     # Genre mapping between mmusic and music-api
     GENRE_MAP_WITH_MMUSIC = {
