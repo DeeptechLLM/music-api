@@ -24,8 +24,7 @@ def get_recommendation_svc(tracks, emotions, genres, limit, recc_type):
     try: 
         unpublished_list = current_app.config['UNPUBLISHED_LIST']
         # Convert str to integer in list
-        unpublished_list = [eval(track) for track in unpublished_list]        
-
+        unpublished_list = [eval(track) for track in unpublished_list]                
         if recc_type == 'home': 
             
             # Get the genres of the tracks
