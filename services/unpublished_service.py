@@ -1,6 +1,13 @@
 from flask import current_app
 
 def update_unpublished_list(tracks):
+    """ Update Unpublished list service
+    Args:
+        tracks (list): list of track_ids
+    
+    Returns:
+        nothing: returns only msg 
+    """
     try:        
         with open('data/v2/unpublished_list.txt', 'w') as list_file:
             for track in tracks:
@@ -15,6 +22,14 @@ def update_unpublished_list(tracks):
         raise Exception(str(e))
 
 def get_unpublished_list():
+    """ Get Unpublished list service
+
+    Raises:
+        Exception: _description_
+
+    Returns:
+        list: list of track_ids
+    """
     try:
         list_file = open('data/v2/unpublished_list.txt', 'r')
         unpublished_list = list_file.readlines()
