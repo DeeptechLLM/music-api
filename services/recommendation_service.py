@@ -714,7 +714,8 @@ def get_tracks_by_emotion(emotion, genres, num_tracks=40):
         #     for emotion_name in emotion_list: 
         
         # Filtering out all songs in the Emotion column for non-zero or specific values
-        filtered_emotions = emotion_model[emotion_model['cluster'] == emotion]        
+        # filtered_emotions = emotion_model[emotion_model['cluster'] == emotion]        
+        filtered_emotions = emotion_model[emotion_model['emotion'] == emotion]
                 
         # Shuffling the songs of the emotion
         shuffled_emotions = filtered_emotions.sample(frac=1).reset_index(drop=True)
