@@ -44,9 +44,8 @@ def get_recommendation():
         today = datetime.now()
         result, msg = get_recommendation_svc(song_ids, emotions, genres, limit, recc_type)
         log = {"uuid": str(uid), "request": data, "response": result, "message": msg}
-        with open('logs/recommendation-' + today.strftime('%Y-%b-%d_%H-%M-%S') + '.log', 'a', encoding='utf-8') as f:
-            # print("log writing: ", log)
-            f.write(str(log) + '\n')
+        # with open('logs/recommendation-' + today.strftime('%Y-%b-%d_%H-%M-%S') + '.log', 'a', encoding='utf-8') as f:            
+        #     f.write(str(log) + '\n')
         return make_response({'statusMessage': 'success', 'tracks': result, 'message': msg, 'uuid': uid}, 201)
     except Exception as e:
         return make_response({'message': str(e)}, 404)
