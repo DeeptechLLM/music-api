@@ -1,6 +1,6 @@
 from flask import current_app
 from sklearn.metrics.pairwise import cosine_similarity
-from utils.simple_utils import remove_duplicate_items
+from utils.simple_utils import remove_duplicate_items, safe_int
 from collections import Counter
 from sklearn.utils import shuffle
 from math import ceil
@@ -724,10 +724,19 @@ def get_tracks_by_emotion(emotion, genres, num_tracks=40):
             num_tracks = len(shuffled_emotions)
             
         selected_list = shuffled_emotions.head(num_tracks)
-            
+        
+        
         # Retrieving <num_tracks> tracks from sorted list
         ordered_emotion_tracks = selected_list[['artist_name', 'm_genre_id', 'm_genre', 'track_id', 'track_m_id', 'track_name']].values.tolist()
-        ordered_emotion_tracks = [[artist_name, int(m_genre_id), m_genre, int(track_id), int(track_m_id), track_name] for artist_name, m_genre_id, m_genre, track_id, track_m_id, track_name in ordered_emotion_tracks]
+        # import math
+        # for artist_name, m_genre_id, m_genre, track_id, track_m_id, track_name in ordered_emotion_tracks:
+        #     if math.isnan(m_genre_id) == True:
+        #         print("m_genre_id is None", track_id, track_m_id, track_name)
+        #     if math.isnan(track_id) == True:
+        #         print("track_id is None")
+        #     if math.isnan(track_m_id) == True:
+        #         print("track_m_id is None")
+        ordered_emotion_tracks = [[artist_name, safe_int(m_genre_id), m_genre, safe_int(track_id), safe_int(track_m_id), track_name] for artist_name, m_genre_id, m_genre, track_id, track_m_id, track_name in ordered_emotion_tracks]
         
         # print("Top {} {} songs:".format(num_tracks, emotion_name))
         for artist_name, m_genre_id, m_genre, track_id, track_m_id, track_name in ordered_emotion_tracks:
@@ -749,6 +758,7 @@ def get_tracks_by_emotion(emotion, genres, num_tracks=40):
 
     except Exception as e: 
         print({"error": str(e)})
+        
         err = {"error": str(e)}
         return [], err
     return recommended_list, other_tracks, None

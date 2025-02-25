@@ -28,3 +28,9 @@ def remove_duplicate_items(_api_data, _key):
 
     return cleaned_data
 
+def safe_int(val):
+    try:
+        return int(val)
+    except ValueError:
+        print("ValueError: Cannot convert to int", val)
+        return 1
